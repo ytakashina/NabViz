@@ -13,7 +13,7 @@ namespace ZetaOne
     public partial class Form1 : Form
     {
         private Graphics _graphics;
-        private Rectangle _selectedRange;
+        private RectangleD _selectedRange;
         private bool _fixed;
         private bool _dataIsDefined;
         
@@ -38,9 +38,8 @@ namespace ZetaOne
         private void AdjustSelectedRange()
         {
             var axisY = chart1.ChartAreas[0].AxisY;
-            Console.WriteLine(axisY.Minimum);
-            var y1 = (int)axisY.ValueToPixelPosition(axisY.Minimum);
-            var y2 = (int)axisY.ValueToPixelPosition(axisY.Maximum);
+            var y1 = axisY.ValueToPixelPosition(axisY.Minimum);
+            var y2 = axisY.ValueToPixelPosition(axisY.Maximum);
             _selectedRange.Y = Math.Min(y1, y2);
             _selectedRange.Height = Math.Abs(y1 - y2);
         }
@@ -48,7 +47,7 @@ namespace ZetaOne
         private void DrawSelectedRange()
         {
             _graphics.Clear(Color.Transparent);
-            _graphics.DrawRectangle(_fixed ? Pens.Red : Pens.Orange, _selectedRange);
+            _graphics.DrawRectangle(_fixed ? Pens.Red : Pens.Orange, (Rectangle)_selectedRange);
             pictureBox1.Refresh();
         }
 
@@ -63,6 +62,9 @@ namespace ZetaOne
             chart1.Initialize();
             chart1.Series.Add(legend);
             chart1.Series[legend].ChartType = SeriesChartType.Line;
+            chart2.Initialize();
+            chart2.Series.Add(legend);
+            chart2.Series[legend].ChartType = SeriesChartType.Line;
 
             using (var sr = new StreamReader(path))
             {
@@ -89,8 +91,8 @@ namespace ZetaOne
             if (_fixed) return;
 
             var axisX = chart1.ChartAreas[0].AxisX;
-            var x1 = (int)axisX.ValueToPixelPosition(axisX.Minimum);
-            var x2 = (int)axisX.ValueToPixelPosition(axisX.Maximum);
+            var x1 = axisX.ValueToPixelPosition(axisX.Minimum);
+            var x2 = axisX.ValueToPixelPosition(axisX.Maximum);
             var minX = Math.Min(x1, x2);
             var maxX = Math.Max(x1, x2);
             var mouseX = pictureBox1.PointToClient(MousePosition).X;
@@ -98,6 +100,17 @@ namespace ZetaOne
             _selectedRange.X = mouseX - _selectedRange.Width / 2;
             if (_selectedRange.Right > maxX) _selectedRange.X = maxX - _selectedRange.Width;
             if (_selectedRange.X < minX) _selectedRange.X = minX;
+
+            var left = axisX.PixelPositionToValue(_selectedRange.X);
+            var right = axisX.PixelPositionToValue(_selectedRange.Right);
+            Console.WriteLine("[" + DateTime.FromOADate(left) + ", " + DateTime.FromOADate(right) + "]");
+            //for (var x = left; x < right;)
+            //{
+            //    chart2.AddPoint(Tuple.Create());
+            //}
+
+
+
         }
 
         private void Form1_SizeChanged(object sender, EventArgs e)
