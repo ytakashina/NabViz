@@ -21,7 +21,7 @@ namespace ZetaOne
         {
             InitializeComponent();
             var dir = new DirectoryInfo(@"..\data");
-            var files = dir.GetFiles().Select(str => str.ToString());
+            var files = dir.GetFiles("*.csv").Select(str => str.ToString());
             foreach (var f in files) listBox1.Items.Add(f);
             pictureBox1.Parent = chart1;
 
