@@ -12,14 +12,6 @@ namespace RichControls
             self.Legends.Clear();
             self.ChartAreas.Clear();
             self.ChartAreas.Add(new ChartArea());
-//            Legend legend1 = new Legend();
-//            Series series1 = new Series();
-//            legend1.Name = "Legend1";
-//            self.Legends.Add(legend1);
-//            series1.ChartArea = "ChartArea1";
-//            series1.Legend = "Legend1";
-//            series1.Name = "Series1";
-//            self.Series.Add(series1);
         }
 
         public static void AddPoints(this Chart self, Tuple<DateTime, double>[] points, string legend)
