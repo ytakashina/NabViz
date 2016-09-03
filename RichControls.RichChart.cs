@@ -4,13 +4,14 @@ using System.Windows.Forms.DataVisualization.Charting;
 
 namespace RichControls
 {
-
     public static class RichChart
     {
         public static void Initialize(this Chart self)
         {
             self.Series.Clear();
             self.Legends.Clear();
+            self.ChartAreas.Clear();
+            self.ChartAreas.Add(new ChartArea());
 //            Legend legend1 = new Legend();
 //            Series series1 = new Series();
 //            legend1.Name = "Legend1";
