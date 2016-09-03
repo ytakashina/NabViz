@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -12,36 +13,54 @@ namespace ZetaOne
     public partial class Form1 : Form
     {
         private Graphics _graphics;
-//        private Point _pos;
-        private int _width;
+        private Rectangle _selectedRange;
         private bool _fixed;
+        private bool _dataIsDefined;
         
         public Form1()
         {
             InitializeComponent();
-            var dir = Directory.CreateDirectory("../data");
+            var dir = new DirectoryInfo(@"..\data");
             var files = dir.GetFiles().Select(str => str.ToString());
-            foreach (var f in files)
-            {
-                listBox1.Items.Add(f);
-            }
+            foreach (var f in files) listBox1.Items.Add(f);
             pictureBox1.Parent = chart1;
 
-            var bmp = new Bitmap(pictureBox1.Width, pictureBox1.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            var bmp = new Bitmap(pictureBox1.Width, pictureBox1.Height, PixelFormat.Format32bppArgb);
             bmp.MakeTransparent();
             _graphics = Graphics.FromImage(bmp);
             pictureBox1.BackgroundImage = bmp;
+            _selectedRange.X = 100;
+            _selectedRange.Width = 100;
 
-            _width = 100;
+            timer1.Start();
+        }
 
+        private void AdjustSelectedRange()
+        {
+            var axisY = chart1.ChartAreas[0].AxisY;
+            Console.WriteLine(axisY.Minimum);
+            var y1 = (int)axisY.ValueToPixelPosition(axisY.Minimum);
+            var y2 = (int)axisY.ValueToPixelPosition(axisY.Maximum);
+            _selectedRange.Y = Math.Min(y1, y2);
+            _selectedRange.Height = Math.Abs(y1 - y2);
+        }
+
+        private void DrawSelectedRange()
+        {
+            _graphics.Clear(Color.Transparent);
+            _graphics.DrawRectangle(_fixed ? Pens.Red : Pens.Orange, _selectedRange);
+            pictureBox1.Refresh();
         }
 
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var path = Path.Combine("../data", listBox1.SelectedItem.ToString());
+            // イベントは非同期に処理されている？ので
+            // データを読み込んでいるときは `_dataIsDefined` を false にする必要がある。
+            _dataIsDefined = false;
+
+            var path = Path.Combine(@"..\data", listBox1.SelectedItem.ToString());
             var legend = listBox1.SelectedItem.ToString().Split('.')[0];
             chart1.Initialize();
-            //chart1.Legends.Add(legend);
             chart1.Series.Add(legend);
             chart1.Series[legend].ChartType = SeriesChartType.Line;
 
@@ -56,66 +75,46 @@ namespace ZetaOne
                     chart1.AddPoint(Tuple.Create(dt, value), legend);
                 }
             }
+            _dataIsDefined = true;
         }
 
         private void pictureBox1_Click(object sender, EventArgs e)
         {
             _fixed = !_fixed;
-//            chart1_Click(sender, e);
-        }
-
-        private void DrawSelectedRange(float x, float y, float w, float h)
-        {
-            _graphics.Clear(Color.Transparent);
-            _graphics.DrawRectangle(_fixed ? Pens.Red : Pens.Orange, x, y, w, h);
         }
 
         private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
         {
-            if (!_fixed) return;
-            var minAxisY = chart1.ChartAreas[0].AxisY.Minimum;
-            var maxAxisY = chart1.ChartAreas[0].AxisY.Maximum;
-            var y1 = (float)chart1.ChartAreas[0].AxisY.ValueToPixelPosition(minAxisY);
-            var y2 = (float)chart1.ChartAreas[0].AxisY.ValueToPixelPosition(maxAxisY);
+            if (!_dataIsDefined) return;
+            if (_fixed) return;
 
-            var minAxisX = chart1.ChartAreas[0].AxisX.Minimum;
-            var maxAxisX = chart1.ChartAreas[0].AxisX.Maximum;
-            var x1 = (float)chart1.ChartAreas[0].AxisX.ValueToPixelPosition(minAxisX);
-            var x2 = (float)chart1.ChartAreas[0].AxisX.ValueToPixelPosition(maxAxisX);
-
-            var minY = Math.Min(y1, y2);
-            var height = Math.Abs(y1 - y2);
-
+            var axisX = chart1.ChartAreas[0].AxisX;
+            var x1 = (int)axisX.ValueToPixelPosition(axisX.Minimum);
+            var x2 = (int)axisX.ValueToPixelPosition(axisX.Maximum);
             var minX = Math.Min(x1, x2);
             var maxX = Math.Max(x1, x2);
+            var mouseX = pictureBox1.PointToClient(MousePosition).X;
 
-            var pointedX = pictureBox1.PointToClient(MousePosition).X;
-            if (pointedX - _width / 2 < minX) pointedX = (int)minX + _width / 2;
-            if (pointedX + _width / 2 > maxX) pointedX = (int)maxX - _width / 2 - 1;
-            DrawSelectedRange(pointedX - _width / 2, minY, _width, height);
-            pictureBox1.Refresh();
+            _selectedRange.X = mouseX - _selectedRange.Width / 2;
+            if (_selectedRange.Right > maxX) _selectedRange.X = maxX - _selectedRange.Width;
+            if (_selectedRange.X < minX) _selectedRange.X = minX;
         }
 
         private void Form1_SizeChanged(object sender, EventArgs e)
         {
-            var bmp = new Bitmap(pictureBox1.Width, pictureBox1.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            var bmp = new Bitmap(pictureBox1.Width, pictureBox1.Height, PixelFormat.Format32bppArgb);
             bmp.MakeTransparent();
             _graphics = Graphics.FromImage(bmp);
             pictureBox1.BackgroundImage = bmp;
-//            DrawSelectedRange();
-//            pictureBox1.Refresh();
         }
 
         private void pictureBox1_MouseWheel(object sender, MouseEventArgs e)
         {
-            if (!_fixed)
-            {
-                _width += e.Delta * SystemInformation.MouseWheelScrollLines / 60;
-                if (_width < 1) _width = 1;
-                if (_width >= pictureBox1.Width) _width = pictureBox1.Width - 1;
-            }
-//            DrawSelectedRange();
-//            pictureBox1.Refresh();
+            if (_fixed) return;
+            var delta = e.Delta * SystemInformation.MouseWheelScrollLines / 60;
+            _selectedRange.Width += delta;
+            _selectedRange.X -= delta / 2;
+            if (_selectedRange.Width < 1) _selectedRange.Width = 1;
         }
 
         private void pictureBox1_MouseEnter(object sender, EventArgs e)
@@ -123,14 +122,11 @@ namespace ZetaOne
             pictureBox1.Focus();
         }
 
-//        private void chart1_Click(object sender, EventArgs e)
-//        {
-////            var x = chart1.ChartAreas[0].AxisX.ValueToPixelPosition(0);
-//            var y = chart1.ChartAreas[0].AxisY.ValueToPixelPosition(0);
-//            var ymax = chart1.ChartAreas[0].AxisY.ValueToPixelPosition(100);
-//
-//            Console.WriteLine(y + " to " + ymax);
-//
-//        }
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            if (!_dataIsDefined) return;
+            AdjustSelectedRange();
+            DrawSelectedRange();
+        }
     }
 }
