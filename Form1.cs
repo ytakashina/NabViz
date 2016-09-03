@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 using RichControls;
@@ -17,7 +12,7 @@ namespace ZetaOne
     public partial class Form1 : Form
     {
         private Graphics _graphics;
-        private Point _pos;
+//        private Point _pos;
         private int _width;
         private bool _fixed;
         
@@ -66,24 +61,38 @@ namespace ZetaOne
         private void pictureBox1_Click(object sender, EventArgs e)
         {
             _fixed = !_fixed;
+//            chart1_Click(sender, e);
         }
 
-        private void DrawSelectedRange()
+        private void DrawSelectedRange(float x, float y, float w, float h)
         {
             _graphics.Clear(Color.Transparent);
-            var height = chart1.ChartAreas[0].Position.Height * chart1.Height;
-            _graphics.DrawRectangle(_fixed ? Pens.Red : Pens.Orange, _pos.X - _width / 2, chart1.ChartAreas[0].Position.Y, _width, height);
+            _graphics.DrawRectangle(_fixed ? Pens.Red : Pens.Orange, x, y, w, h);
         }
 
         private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
         {
-            if (!_fixed)
-            {
-                _pos = pictureBox1.PointToClient(MousePosition);
-                if (_pos.X - _width / 2 < 0) _pos.X = _width / 2;
-                if (_pos.X + _width / 2 > pictureBox1.Width) _pos.X = pictureBox1.Width - _width / 2 - 1;
-            }
-            DrawSelectedRange();
+            if (!_fixed) return;
+            var minAxisY = chart1.ChartAreas[0].AxisY.Minimum;
+            var maxAxisY = chart1.ChartAreas[0].AxisY.Maximum;
+            var y1 = (float)chart1.ChartAreas[0].AxisY.ValueToPixelPosition(minAxisY);
+            var y2 = (float)chart1.ChartAreas[0].AxisY.ValueToPixelPosition(maxAxisY);
+
+            var minAxisX = chart1.ChartAreas[0].AxisX.Minimum;
+            var maxAxisX = chart1.ChartAreas[0].AxisX.Maximum;
+            var x1 = (float)chart1.ChartAreas[0].AxisX.ValueToPixelPosition(minAxisX);
+            var x2 = (float)chart1.ChartAreas[0].AxisX.ValueToPixelPosition(maxAxisX);
+
+            var minY = Math.Min(y1, y2);
+            var height = Math.Abs(y1 - y2);
+
+            var minX = Math.Min(x1, x2);
+            var maxX = Math.Max(x1, x2);
+
+            var pointedX = pictureBox1.PointToClient(MousePosition).X;
+            if (pointedX - _width / 2 < minX) pointedX = (int)minX + _width / 2;
+            if (pointedX + _width / 2 > maxX) pointedX = (int)maxX - _width / 2 - 1;
+            DrawSelectedRange(pointedX - _width / 2, minY, _width, height);
             pictureBox1.Refresh();
         }
 
@@ -93,8 +102,8 @@ namespace ZetaOne
             bmp.MakeTransparent();
             _graphics = Graphics.FromImage(bmp);
             pictureBox1.BackgroundImage = bmp;
-            DrawSelectedRange();
-            pictureBox1.Refresh();
+//            DrawSelectedRange();
+//            pictureBox1.Refresh();
         }
 
         private void pictureBox1_MouseWheel(object sender, MouseEventArgs e)
@@ -105,13 +114,23 @@ namespace ZetaOne
                 if (_width < 1) _width = 1;
                 if (_width >= pictureBox1.Width) _width = pictureBox1.Width - 1;
             }
-            DrawSelectedRange();
-            pictureBox1.Refresh();
+//            DrawSelectedRange();
+//            pictureBox1.Refresh();
         }
 
         private void pictureBox1_MouseEnter(object sender, EventArgs e)
         {
             pictureBox1.Focus();
         }
+
+//        private void chart1_Click(object sender, EventArgs e)
+//        {
+////            var x = chart1.ChartAreas[0].AxisX.ValueToPixelPosition(0);
+//            var y = chart1.ChartAreas[0].AxisY.ValueToPixelPosition(0);
+//            var ymax = chart1.ChartAreas[0].AxisY.ValueToPixelPosition(100);
+//
+//            Console.WriteLine(y + " to " + ymax);
+//
+//        }
     }
 }
