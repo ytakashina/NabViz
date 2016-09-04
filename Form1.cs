@@ -62,9 +62,11 @@ namespace ZetaOne
             chart1.Initialize();
             chart1.Series.Add(legend);
             chart1.Series[legend].ChartType = SeriesChartType.Line;
+            chart1.Series[legend].XValueType = ChartValueType.DateTime;
             chart2.Initialize();
             chart2.Series.Add(legend);
             chart2.Series[legend].ChartType = SeriesChartType.Line;
+            chart2.Series[legend].XValueType = ChartValueType.DateTime;
 
             using (var sr = new StreamReader(path))
             {
@@ -100,17 +102,6 @@ namespace ZetaOne
             _selectedRange.X = mouseX - _selectedRange.Width / 2;
             if (_selectedRange.Right > maxX) _selectedRange.X = maxX - _selectedRange.Width;
             if (_selectedRange.X < minX) _selectedRange.X = minX;
-
-            var left = axisX.PixelPositionToValue(_selectedRange.X);
-            var right = axisX.PixelPositionToValue(_selectedRange.Right);
-            Console.WriteLine("[" + DateTime.FromOADate(left) + ", " + DateTime.FromOADate(right) + "]");
-            //for (var x = left; x < right;)
-            //{
-            //    chart2.AddPoint(Tuple.Create());
-            //}
-
-
-
         }
 
         private void Form1_SizeChanged(object sender, EventArgs e)
@@ -140,6 +131,21 @@ namespace ZetaOne
             if (!_dataIsDefined) return;
             AdjustSelectedRange();
             DrawSelectedRange();
+
+            // 上の Chart の選択範囲に応じて下の Chart のデータを更新。
+            if (_fixed) return;
+            var axisX = chart1.ChartAreas[0].AxisX;
+            var left = axisX.PixelPositionToValue(_selectedRange.X);
+            var right = axisX.PixelPositionToValue(_selectedRange.Right);
+            //Console.WriteLine("[" + DateTime.FromOADate(left) + ", " + DateTime.FromOADate(right) + "]");
+            chart2.Series[0].Points.Clear();
+            foreach (var point in chart1.Series[0].Points)
+            {
+                if (point.XValue > left && point.XValue < right)
+                {
+                    chart2.Series[0].Points.Add(point);
+                }
+            }
         }
     }
 }
