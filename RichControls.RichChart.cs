@@ -4,7 +4,7 @@ using System.Windows.Forms.DataVisualization.Charting;
 
 namespace RichControls
 {
-    public static class RichChart
+    public static partial class Extensions
     {
         public static void Initialize(this Chart self)
         {
@@ -35,7 +35,7 @@ namespace RichControls
             }
             catch (ArgumentException)
             {
-                Debug.WriteLine(legend + " is empty series.");
+                Debug.WriteLine("Series[" + legend + "] is empty.");
             }
         }
 
@@ -47,7 +47,7 @@ namespace RichControls
             }
             catch (ArgumentException)
             {
-                Debug.WriteLine("Series[" + index + "] is empty series.");
+                Debug.WriteLine("Series[" + index + "] is empty.");
             }
         }
     }

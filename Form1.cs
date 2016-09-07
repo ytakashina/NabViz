@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
+using System.Timers;
 using RichControls;
 
 namespace ZetaOne
@@ -15,8 +16,11 @@ namespace ZetaOne
         private Graphics _graphics;
         private RectangleD _selectedRange;
         private bool _fixed;
-        private bool _dataIsDefined;
-        
+        private bool _dataLoadCompleted;
+        private DataReader _dataReader;
+        private readonly System.Timers.Timer timer2;
+        private readonly double _defaultInterval;
+
         public Form1()
         {
             InitializeComponent();
@@ -29,13 +33,16 @@ namespace ZetaOne
             bmp.MakeTransparent();
             _graphics = Graphics.FromImage(bmp);
             pictureBox1.BackgroundImage = bmp;
-            _selectedRange.X = 100;
+            _selectedRange.X = 50;
             _selectedRange.Width = 100;
 
             timer1.Start();
+            timer2 = new System.Timers.Timer();
+            timer2.Elapsed += timer2_Tick;
+            _defaultInterval = timer2.Interval;
         }
 
-        private void AdjustSelectedRange()
+        private void AdjustSelectedRangeToAxisY()
         {
             var axisY = chart1.ChartAreas[0].AxisY;
             var y1 = axisY.ValueToPixelPosition(axisY.Minimum);
@@ -48,14 +55,22 @@ namespace ZetaOne
         {
             _graphics.Clear(Color.Transparent);
             _graphics.DrawRectangle(_fixed ? Pens.Red : Pens.Orange, (Rectangle)_selectedRange);
-            pictureBox1.Refresh();
+        }
+
+        private void DrawDataScanner()
+        {
+            if (_dataReader == null) return;
+            var x = (int)chart1.ChartAreas[0].AxisX.ValueToPixelPosition(_dataReader.Current.XValue);
+            var y1 = (int)_selectedRange.Top;
+            var y2 = (int)_selectedRange.Bottom;
+            _graphics.DrawLine(Pens.Red, new Point(x, y1), new Point(x, y2));
         }
 
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             // イベントは非同期に処理されている？ので
-            // データを読み込んでいるときは `_dataIsDefined` を false にする必要がある。
-            _dataIsDefined = false;
+            // データを読み込んでいるときは `_dataLoadCompleted` を false にする必要がある。
+            _dataLoadCompleted = false;
 
             var path = Path.Combine(@"..\data", listBox1.SelectedItem.ToString());
             var legend = listBox1.SelectedItem.ToString().Split('.')[0];
@@ -70,7 +85,7 @@ namespace ZetaOne
 
             using (var sr = new StreamReader(path))
             {
-                var head = sr.ReadLine()?.Split(',');
+                var head = sr.ReadLine().Split(',');
                 while (!sr.EndOfStream)
                 {
                     var line = sr.ReadLine().Split(',');
@@ -79,7 +94,22 @@ namespace ZetaOne
                     chart1.AddPoint(Tuple.Create(dt, value), legend);
                 }
             }
-            _dataIsDefined = true;
+            _dataLoadCompleted = true;
+
+            textBox1.Clear();
+
+            _dataReader = new DataReader(chart1.Series[0]);
+
+            //chart1.Annotations.Add(new VerticalLineAnnotation {
+            //    AxisX = chart1.ChartAreas[0].AxisX,
+            //    AxisY = chart1.ChartAreas[0].AxisY,
+            //    AnchorDataPoint = chart1.Series[0].Points[500],
+            //    IsInfinitive = true,
+            //    AllowAnchorMoving = false,
+            //    LineColor = Color.Blue,
+            //    LineWidth = 1
+            //});
+
         }
 
         private void pictureBox1_Click(object sender, EventArgs e)
@@ -89,7 +119,7 @@ namespace ZetaOne
 
         private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
         {
-            if (!_dataIsDefined) return;
+            if (!_dataLoadCompleted) return;
             if (_fixed) return;
 
             var axisX = chart1.ChartAreas[0].AxisX;
@@ -115,7 +145,7 @@ namespace ZetaOne
         private void pictureBox1_MouseWheel(object sender, MouseEventArgs e)
         {
             if (_fixed) return;
-            var delta = e.Delta * SystemInformation.MouseWheelScrollLines / 60;
+            var delta = e.Delta * SystemInformation.MouseWheelScrollLines / 60.0;
             _selectedRange.Width += delta;
             _selectedRange.X -= delta / 2;
             if (_selectedRange.Width < 1) _selectedRange.Width = 1;
@@ -126,11 +156,28 @@ namespace ZetaOne
             pictureBox1.Focus();
         }
 
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (_dataReader == null) return;
+            var point = _dataReader.Next;
+            textBox1.WriteLineBefore("[" + DateTime.FromOADate(point.XValue) + ", " + point.YValues[0] + "]");
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            if (_dataReader == null) return;
+            var point = _dataReader.Prev;
+            textBox1.WriteLineBefore("[" + DateTime.FromOADate(point.XValue) + ", " + point.YValues[0] + "]");
+        }
+
         private void timer1_Tick(object sender, EventArgs e)
         {
-            if (!_dataIsDefined) return;
-            AdjustSelectedRange();
+            if (!_dataLoadCompleted) return;
+            AdjustSelectedRangeToAxisY();
             DrawSelectedRange();
+            DrawDataScanner();
+            pictureBox1.Refresh();
+
 
             // 上の Chart の選択範囲に応じて下の Chart のデータを更新。
             if (_fixed) return;
@@ -146,6 +193,73 @@ namespace ZetaOne
                     chart2.Series[0].Points.Add(point);
                 }
             }
+            chart2.ChartAreas[0].AxisY.Maximum = chart1.ChartAreas[0].AxisY.Maximum;
+            chart2.ChartAreas[0].AxisY.Minimum = chart1.ChartAreas[0].AxisY.Minimum;
+        }
+
+        private void timer2_Tick(object sender, EventArgs e)
+        {
+            if (_dataReader == null) return;
+            var point = _dataReader.Next;
+
+            if (checkBox3.Checked)
+            {
+                textBox1.Invoke((Action)(() =>
+                {
+                    textBox1.WriteLineBefore("[" + DateTime.FromOADate(point.XValue) + ", " + point.YValues[0] + "]");
+                }));
+            }
+
+            if (!checkBox1.Checked) return;
+            var axisX = chart1.ChartAreas[0].AxisX;
+            var x = axisX.ValueToPixelPosition(_dataReader.Current.XValue) - _selectedRange.Width / 2;
+            if (x > _selectedRange.X) _selectedRange.X = x;
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            textBox1.WriteLineBefore("trace " + (checkBox1.Checked ? "ON" : "OFF"));
+        }
+
+        private void checkBox2_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBox2.Checked)
+            {
+                timer2.Start();
+                button1.Enabled = false;
+                button2.Enabled = false;
+            }
+            else
+            {
+                timer2.Stop();
+                button1.Enabled = true;
+                button2.Enabled = true;
+            }
+        }
+
+        private void radioButton1_CheckedChanged(object sender, EventArgs e)
+        {
+            timer2.Interval = _defaultInterval;
+        }
+
+        private void radioButton2_CheckedChanged(object sender, EventArgs e)
+        {
+            timer2.Interval = _defaultInterval / 2;
+        }
+
+        private void radioButton3_CheckedChanged(object sender, EventArgs e)
+        {
+            timer2.Interval = _defaultInterval / 4;
+        }
+
+        private void radioButton4_CheckedChanged(object sender, EventArgs e)
+        {
+            timer2.Interval = _defaultInterval / 8;
+        }
+
+        private void radioButton5_CheckedChanged(object sender, EventArgs e)
+        {
+            timer2.Interval = _defaultInterval / 16;
         }
     }
 }
