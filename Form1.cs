@@ -146,6 +146,8 @@ namespace ZetaOne
                     chart2.Series[0].Points.Add(point);
                 }
             }
+            chart2.ChartAreas[0].AxisY.Maximum = chart1.ChartAreas[0].AxisY.Maximum;
+            chart2.ChartAreas[0].AxisY.Minimum = chart1.ChartAreas[0].AxisY.Minimum;
         }
     }
 }
