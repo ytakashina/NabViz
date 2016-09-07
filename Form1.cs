@@ -17,6 +17,7 @@ namespace ZetaOne
         private bool _fixed;
         private bool _dataLoadCompleted;
         private DataReader _dataReader;
+        private readonly int _defaultInterval;
         
         public Form1()
         {
@@ -34,6 +35,8 @@ namespace ZetaOne
             _selectedRange.Width = 100;
 
             timer1.Start();
+
+            _defaultInterval = timer2.Interval;
         }
 
         private void AdjustSelectedRangeToAxisY()
@@ -221,6 +224,31 @@ namespace ZetaOne
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
             textBox1.WriteLineBefore("trace " + (checkBox1.Checked ? "ON" : "OFF"));
+        }
+
+        private void radioButton1_CheckedChanged(object sender, EventArgs e)
+        {
+            timer2.Interval = _defaultInterval;
+        }
+
+        private void radioButton2_CheckedChanged(object sender, EventArgs e)
+        {
+            timer2.Interval = _defaultInterval / 2;
+        }
+
+        private void radioButton3_CheckedChanged(object sender, EventArgs e)
+        {
+            timer2.Interval = _defaultInterval / 4;
+        }
+
+        private void radioButton4_CheckedChanged(object sender, EventArgs e)
+        {
+            timer2.Interval = _defaultInterval / 8;
+        }
+
+        private void radioButton5_CheckedChanged(object sender, EventArgs e)
+        {
+            timer2.Interval = _defaultInterval / 16;
         }
     }
 }
