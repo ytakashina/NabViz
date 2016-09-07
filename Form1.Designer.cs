@@ -13,12 +13,12 @@
         /// <param name="disposing">マネージ リソースを破棄する場合は true を指定し、その他の場合は false を指定します。</param>
         protected override void Dispose(bool disposing)
         {
+            timer2.Dispose();
             if (disposing && (components != null))
             {
                 components.Dispose();
             }
             base.Dispose(disposing);
-            _dataReader = null;
         }
 
         #region Windows フォーム デザイナーで生成されたコード
