@@ -33,7 +33,7 @@ namespace ZetaOne
             bmp.MakeTransparent();
             _graphics = Graphics.FromImage(bmp);
             pictureBox1.BackgroundImage = bmp;
-            _selectedRange.X = 100;
+            _selectedRange.X = 50;
             _selectedRange.Width = 100;
 
             timer1.Start();
@@ -201,6 +201,7 @@ namespace ZetaOne
         {
             if (_dataReader == null) return;
             var point = _dataReader.Next;
+
             if (checkBox3.Checked)
             {
                 textBox1.Invoke((Action)(() =>
