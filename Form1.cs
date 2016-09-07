@@ -15,7 +15,7 @@ namespace ZetaOne
         private Graphics _graphics;
         private RectangleD _selectedRange;
         private bool _fixed;
-        private bool _dataIsDefined;
+        private bool _dataLoadCompleted;
         
         public Form1()
         {
@@ -35,7 +35,7 @@ namespace ZetaOne
             timer1.Start();
         }
 
-        private void AdjustSelectedRange()
+        private void AdjustSelectedRangeToAxisY()
         {
             var axisY = chart1.ChartAreas[0].AxisY;
             var y1 = axisY.ValueToPixelPosition(axisY.Minimum);
@@ -54,8 +54,8 @@ namespace ZetaOne
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             // イベントは非同期に処理されている？ので
-            // データを読み込んでいるときは `_dataIsDefined` を false にする必要がある。
-            _dataIsDefined = false;
+            // データを読み込んでいるときは `_dataLoadCompleted` を false にする必要がある。
+            _dataLoadCompleted = false;
 
             var path = Path.Combine(@"..\data", listBox1.SelectedItem.ToString());
             var legend = listBox1.SelectedItem.ToString().Split('.')[0];
@@ -79,7 +79,7 @@ namespace ZetaOne
                     chart1.AddPoint(Tuple.Create(dt, value), legend);
                 }
             }
-            _dataIsDefined = true;
+            _dataLoadCompleted = true;
         }
 
         private void pictureBox1_Click(object sender, EventArgs e)
@@ -89,7 +89,7 @@ namespace ZetaOne
 
         private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
         {
-            if (!_dataIsDefined) return;
+            if (!_dataLoadCompleted) return;
             if (_fixed) return;
 
             var axisX = chart1.ChartAreas[0].AxisX;
@@ -128,8 +128,8 @@ namespace ZetaOne
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            if (!_dataIsDefined) return;
-            AdjustSelectedRange();
+            if (!_dataLoadCompleted) return;
+            AdjustSelectedRangeToAxisY();
             DrawSelectedRange();
 
             // 上の Chart の選択範囲に応じて下の Chart のデータを更新。
