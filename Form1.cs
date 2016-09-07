@@ -152,14 +152,14 @@ namespace ZetaOne
         {
             if (_dataReader == null) return;
             var point = _dataReader.Next;
-            Console.WriteLine("[" + DateTime.FromOADate(point.XValue) + ", " + point.YValues[0] + "]");
+            textBox1.WriteLineBefore("[" + DateTime.FromOADate(point.XValue) + ", " + point.YValues[0] + "]");
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
             if (_dataReader == null) return;
             var point = _dataReader.Prev;
-            Console.WriteLine("[" + DateTime.FromOADate(point.XValue) + ", " + point.YValues[0] + "]");
+            textBox1.WriteLineBefore("[" + DateTime.FromOADate(point.XValue) + ", " + point.YValues[0] + "]");
         }
 
         private void timer1_Tick(object sender, EventArgs e)
@@ -193,7 +193,7 @@ namespace ZetaOne
         {
             if (_dataReader == null) return;
             var point = _dataReader.Next;
-            Console.WriteLine("[" + DateTime.FromOADate(point.XValue) + ", " + point.YValues[0] + "]");
+            textBox1.WriteLineBefore("[" + DateTime.FromOADate(point.XValue) + ", " + point.YValues[0] + "]");
             if (checkBox1.Checked)
             {
                 var axisX = chart1.ChartAreas[0].AxisX;
@@ -216,5 +216,9 @@ namespace ZetaOne
             }
         }
 
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            textBox1.WriteLineBefore("trace " + (checkBox1.Checked ? "ON" : "OFF"));
+        }
     }
 }
