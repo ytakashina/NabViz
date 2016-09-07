@@ -155,6 +155,13 @@ namespace ZetaOne
             Console.WriteLine("[" + DateTime.FromOADate(point.XValue) + ", " + point.YValues[0] + "]");
         }
 
+        private void button2_Click(object sender, EventArgs e)
+        {
+            if (_dataReader == null) return;
+            var point = _dataReader.Prev;
+            Console.WriteLine("[" + DateTime.FromOADate(point.XValue) + ", " + point.YValues[0] + "]");
+        }
+
         private void timer1_Tick(object sender, EventArgs e)
         {
             if (!_dataLoadCompleted) return;
@@ -208,5 +215,6 @@ namespace ZetaOne
                 button1.Enabled = true;
             }
         }
+
     }
 }
