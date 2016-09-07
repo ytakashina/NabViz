@@ -16,6 +16,7 @@ namespace ZetaOne
         private RectangleD _selectedRange;
         private bool _fixed;
         private bool _dataLoadCompleted;
+        private DataReader _dataReader;
         
         public Form1()
         {
@@ -48,7 +49,15 @@ namespace ZetaOne
         {
             _graphics.Clear(Color.Transparent);
             _graphics.DrawRectangle(_fixed ? Pens.Red : Pens.Orange, (Rectangle)_selectedRange);
-            pictureBox1.Refresh();
+        }
+
+        private void DrawDataScanner()
+        {
+            if (_dataReader == null) return;
+            var x = (int)chart1.ChartAreas[0].AxisX.ValueToPixelPosition(_dataReader.Current.XValue);
+            var y1 = (int)_selectedRange.Top;
+            var y2 = (int)_selectedRange.Bottom;
+            _graphics.DrawLine(Pens.Red, new Point(x, y1), new Point(x, y2));
         }
 
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
@@ -80,6 +89,8 @@ namespace ZetaOne
                 }
             }
             _dataLoadCompleted = true;
+
+            _dataReader = new DataReader(chart1.Series[0]);
         }
 
         private void pictureBox1_Click(object sender, EventArgs e)
@@ -131,6 +142,9 @@ namespace ZetaOne
             if (!_dataLoadCompleted) return;
             AdjustSelectedRangeToAxisY();
             DrawSelectedRange();
+            DrawDataScanner();
+            pictureBox1.Refresh();
+
 
             // 上の Chart の選択範囲に応じて下の Chart のデータを更新。
             if (_fixed) return;
@@ -148,6 +162,23 @@ namespace ZetaOne
             }
             chart2.ChartAreas[0].AxisY.Maximum = chart1.ChartAreas[0].AxisY.Maximum;
             chart2.ChartAreas[0].AxisY.Minimum = chart1.ChartAreas[0].AxisY.Minimum;
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (_dataReader == null) return;
+            var point = _dataReader.Next;
+            Console.WriteLine("[" + DateTime.FromOADate(point.XValue) + ", " + point.YValues[0] + "]");
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
