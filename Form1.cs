@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
+using System.Timers;
 using RichControls;
 
 namespace ZetaOne
@@ -17,8 +18,9 @@ namespace ZetaOne
         private bool _fixed;
         private bool _dataLoadCompleted;
         private DataReader _dataReader;
-        private readonly int _defaultInterval;
-        
+        private readonly System.Timers.Timer timer2;
+        private readonly double _defaultInterval;
+
         public Form1()
         {
             InitializeComponent();
@@ -35,7 +37,8 @@ namespace ZetaOne
             _selectedRange.Width = 100;
 
             timer1.Start();
-
+            timer2 = new System.Timers.Timer();
+            timer2.Elapsed += timer2_Tick;
             _defaultInterval = timer2.Interval;
         }
 
@@ -198,13 +201,23 @@ namespace ZetaOne
         {
             if (_dataReader == null) return;
             var point = _dataReader.Next;
-            textBox1.WriteLineBefore("[" + DateTime.FromOADate(point.XValue) + ", " + point.YValues[0] + "]");
-            if (checkBox1.Checked)
+            if (checkBox3.Checked)
             {
-                var axisX = chart1.ChartAreas[0].AxisX;
-                var x = axisX.ValueToPixelPosition(_dataReader.Current.XValue) - _selectedRange.Width / 2;
-                if (x > _selectedRange.X) _selectedRange.X = x;
+                textBox1.Invoke((Action)(() =>
+                {
+                    textBox1.WriteLineBefore("[" + DateTime.FromOADate(point.XValue) + ", " + point.YValues[0] + "]");
+                }));
             }
+
+            if (!checkBox1.Checked) return;
+            var axisX = chart1.ChartAreas[0].AxisX;
+            var x = axisX.ValueToPixelPosition(_dataReader.Current.XValue) - _selectedRange.Width / 2;
+            if (x > _selectedRange.X) _selectedRange.X = x;
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            textBox1.WriteLineBefore("trace " + (checkBox1.Checked ? "ON" : "OFF"));
         }
 
         private void checkBox2_CheckedChanged(object sender, EventArgs e)
@@ -213,17 +226,14 @@ namespace ZetaOne
             {
                 timer2.Start();
                 button1.Enabled = false;
+                button2.Enabled = false;
             }
             else
             {
                 timer2.Stop();
                 button1.Enabled = true;
+                button2.Enabled = true;
             }
-        }
-
-        private void checkBox1_CheckedChanged(object sender, EventArgs e)
-        {
-            textBox1.WriteLineBefore("trace " + (checkBox1.Checked ? "ON" : "OFF"));
         }
 
         private void radioButton1_CheckedChanged(object sender, EventArgs e)
