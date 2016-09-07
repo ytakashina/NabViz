@@ -90,6 +90,8 @@ namespace ZetaOne
             }
             _dataLoadCompleted = true;
 
+            textBox1.Clear();
+
             _dataReader = new DataReader(chart1.Series[0]);
 
             //chart1.Annotations.Add(new VerticalLineAnnotation {
