@@ -18,6 +18,7 @@
                 components.Dispose();
             }
             base.Dispose(disposing);
+            _dataReader = null;
         }
 
         #region Windows フォーム デザイナーで生成されたコード
