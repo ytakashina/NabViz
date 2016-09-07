@@ -79,7 +79,7 @@ namespace ZetaOne
 
             using (var sr = new StreamReader(path))
             {
-                var head = sr.ReadLine()?.Split(',');
+                var head = sr.ReadLine().Split(',');
                 while (!sr.EndOfStream)
                 {
                     var line = sr.ReadLine().Split(',');
@@ -91,6 +91,17 @@ namespace ZetaOne
             _dataLoadCompleted = true;
 
             _dataReader = new DataReader(chart1.Series[0]);
+
+            //chart1.Annotations.Add(new VerticalLineAnnotation {
+            //    AxisX = chart1.ChartAreas[0].AxisX,
+            //    AxisY = chart1.ChartAreas[0].AxisY,
+            //    AnchorDataPoint = chart1.Series[0].Points[500],
+            //    IsInfinitive = true,
+            //    AllowAnchorMoving = false,
+            //    LineColor = Color.Blue,
+            //    LineWidth = 1
+            //});
+
         }
 
         private void pictureBox1_Click(object sender, EventArgs e)
@@ -137,6 +148,13 @@ namespace ZetaOne
             pictureBox1.Focus();
         }
 
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (_dataReader == null) return;
+            var point = _dataReader.Next;
+            Console.WriteLine("[" + DateTime.FromOADate(point.XValue) + ", " + point.YValues[0] + "]");
+        }
+
         private void timer1_Tick(object sender, EventArgs e)
         {
             if (!_dataLoadCompleted) return;
@@ -164,21 +182,31 @@ namespace ZetaOne
             chart2.ChartAreas[0].AxisY.Minimum = chart1.ChartAreas[0].AxisY.Minimum;
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void timer2_Tick(object sender, EventArgs e)
         {
             if (_dataReader == null) return;
             var point = _dataReader.Next;
             Console.WriteLine("[" + DateTime.FromOADate(point.XValue) + ", " + point.YValues[0] + "]");
+            if (checkBox1.Checked)
+            {
+                var axisX = chart1.ChartAreas[0].AxisX;
+                var x = axisX.ValueToPixelPosition(_dataReader.Current.XValue) - _selectedRange.Width / 2;
+                if (x > _selectedRange.X) _selectedRange.X = x;
+            }
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private void checkBox2_CheckedChanged(object sender, EventArgs e)
         {
-
-        }
-
-        private void button3_Click(object sender, EventArgs e)
-        {
-
+            if (checkBox2.Checked)
+            {
+                timer2.Start();
+                button1.Enabled = false;
+            }
+            else
+            {
+                timer2.Stop();
+                button1.Enabled = true;
+            }
         }
     }
 }
