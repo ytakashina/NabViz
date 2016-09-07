@@ -115,7 +115,7 @@ namespace ZetaOne
         private void pictureBox1_MouseWheel(object sender, MouseEventArgs e)
         {
             if (_fixed) return;
-            var delta = e.Delta * SystemInformation.MouseWheelScrollLines / 60;
+            var delta = e.Delta * SystemInformation.MouseWheelScrollLines / 60.0;
             _selectedRange.Width += delta;
             _selectedRange.X -= delta / 2;
             if (_selectedRange.Width < 1) _selectedRange.Width = 1;
