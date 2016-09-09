@@ -58,8 +58,8 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RichControls.Geometry.cs" />
-    <Compile Include="RichControls.RichTextBox.cs" />
+    <Compile Include="RichForms.Geometry.cs" />
+    <Compile Include="RichForms.RichTextBox.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
