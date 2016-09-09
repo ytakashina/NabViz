@@ -19,5 +19,10 @@ namespace ZetaOne
         public DataPoint Last => _series.Points[_series.Points.Count - 1];
         public bool StartOfStream => _current == 0;
         public bool EndOfStream => _current == _series.Points.Count - 1;
+
+        public void Rewind()
+        {
+            _current = 0;
+        }
     }
 }

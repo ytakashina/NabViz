@@ -141,6 +141,7 @@ namespace ZetaOne
         private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
         {
             if (!_dataLoadCompleted) return;
+            // trace が ON だったら無視。
             if (checkBox1.Checked) return;
 
             var axisX = chart1.ChartAreas[UpperChartAreaName].AxisX;
@@ -148,8 +149,8 @@ namespace ZetaOne
             var minX = axisX.ValueToPixelPosition(axisX.Minimum);
             var maxX = axisX.ValueToPixelPosition(axisX.Maximum);
             var minY = axisY.ValueToPixelPosition(axisY.Minimum);
-
             var mousePosition = chart1.PointToClient(MousePosition);
+
             if (mousePosition.Y > minY) return;
 
             _selection.X = mousePosition.X - _selection.Width / 2;
@@ -229,6 +230,14 @@ namespace ZetaOne
             if (_dataReader == null || _dataReader.EndOfStream) return;
             var point = _dataReader.Next;
 
+            // trace
+            if (checkBox1.Checked)
+            {
+                var axisX = chart1.ChartAreas[UpperChartAreaName].AxisX;
+                var x = axisX.ValueToPixelPosition(_dataReader.Current.XValue) - _selection.Width / 2;
+                if (x > _selection.X) _selection.X = x;
+            }
+
             // log
             if (checkBox3.Checked)
             {
@@ -236,11 +245,11 @@ namespace ZetaOne
                 textBox1.Invoke((Action)(() => { textBox1.WriteLineBefore(str); }));
             }
 
-            // trace
-            if (!checkBox1.Checked) return;
-            var axisX = chart1.ChartAreas[UpperChartAreaName].AxisX;
-            var x = axisX.ValueToPixelPosition(_dataReader.Current.XValue) - _selection.Width / 2;
-            if (x > _selection.X) _selection.X = x;
+            if (_dataReader.EndOfStream)
+            {
+                checkBox2.Invoke((Action)(() => { checkBox2.Checked = false; }));
+                _dataReader.Rewind();
+            }
         }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
