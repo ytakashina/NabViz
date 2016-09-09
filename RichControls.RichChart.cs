@@ -6,12 +6,19 @@ namespace RichControls
 {
     public static partial class Extensions
     {
-        public static void Initialize(this Chart self)
+        public static void AddLineAnnotation(this Chart self)
         {
-            self.Series.Clear();
-            self.Legends.Clear();
-            self.ChartAreas.Clear();
-            self.ChartAreas.Add(new ChartArea());
+            
+        }
+
+        public static void AddRectangleAnnotation(this Chart self)
+        {
+
+        }
+
+        public static void AdjustRectangleAnnotationToAxisY(this Chart self)
+        {
+            
         }
 
         public static void AddPoints(this Chart self, Tuple<DateTime, double>[] points, string legend)
