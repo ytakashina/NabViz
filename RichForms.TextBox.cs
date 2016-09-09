@@ -1,6 +1,6 @@
 ﻿using System.Windows.Forms;
 
-namespace RichControls
+namespace RichForms
 {
     public static partial class Extensions
     {
