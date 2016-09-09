@@ -104,16 +104,6 @@ namespace ZetaOne
 
             _dataReader = new DataReader(chart1.Series[0]);
 
-            //chart1.Annotations.Add(new VerticalLineAnnotation {
-            //    AxisX = chart1.ChartAreas[0].AxisX,
-            //    AxisY = chart1.ChartAreas[0].AxisY,
-            //    AnchorDataPoint = chart1.Series[0].Points[500],
-            //    IsInfinitive = true,
-            //    AllowAnchorMoving = false,
-            //    LineColor = Color.Blue,
-            //    LineWidth = 1
-            //});
-
         }
 
         private void pictureBox1_Click(object sender, EventArgs e)
@@ -127,10 +117,8 @@ namespace ZetaOne
             if (_fixed) return;
 
             var axisX = chart1.ChartAreas[0].AxisX;
-            var x1 = axisX.ValueToPixelPosition(axisX.Minimum);
-            var x2 = axisX.ValueToPixelPosition(axisX.Maximum);
-            var minX = Math.Min(x1, x2);
-            var maxX = Math.Max(x1, x2);
+            var minX = axisX.ValueToPixelPosition(axisX.Minimum);
+            var maxX = axisX.ValueToPixelPosition(axisX.Maximum);
             var mouseX = pictureBox1.PointToClient(MousePosition).X;
 
             _selectedRange.X = mouseX - _selectedRange.Width / 2;
@@ -200,7 +188,7 @@ namespace ZetaOne
             {
                 if (point.XValue > left && point.XValue < right)
                 {
-                    chart2.Series[0].Points.Add(point);
+                    chart2.Series[0].Points.Add(new DataPoint(point.XValue, point.YValues));
                 }
             }
             chart2.ChartAreas[0].AxisY.Maximum = chart1.ChartAreas[0].AxisY.Maximum;
@@ -212,14 +200,14 @@ namespace ZetaOne
             if (_dataReader == null || _dataReader.EndOfStream) return;
             var point = _dataReader.Next;
 
+            // log
             if (checkBox3.Checked)
             {
-                textBox1.Invoke((Action)(() =>
-                {
-                    textBox1.WriteLineBefore("[" + DateTime.FromOADate(point.XValue) + ", " + point.YValues[0] + "]");
-                }));
+                var str = "[" + DateTime.FromOADate(point.XValue) + ", " + point.YValues[0] + "]";
+                textBox1.Invoke((Action)(() => { textBox1.WriteLineBefore(str); }));
             }
 
+            // trace
             if (!checkBox1.Checked) return;
             var axisX = chart1.ChartAreas[0].AxisX;
             var x = axisX.ValueToPixelPosition(_dataReader.Current.XValue) - _selectedRange.Width / 2;
