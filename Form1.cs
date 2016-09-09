@@ -58,6 +58,19 @@ namespace ZetaOne
             _selection.Width = 100;
         }
 
+        /// <summary>
+        /// このメソッドの実行前には chart1.Refresh() などで一度 Chart を再描画する必要がある。
+        /// クソだけど Windows.Forms の Chart の仕様なので仕方ない。
+        /// </summary>
+        private void AdjustSelection()
+        {
+            var axisX = chart1.ChartAreas[UpperChartAreaName].AxisX;
+            var axisY = chart1.ChartAreas[UpperChartAreaName].AxisY;
+            _selection.X = axisX.ValueToPixelPosition(axisX.Minimum);
+            _selection.Y = axisY.ValueToPixelPosition(axisY.Maximum);
+            _selection.Height = axisY.ValueToPixelPosition(axisY.Minimum) - _selection.Y;
+        }
+
         private void DrawSelectedRange()
         {
             _graphics.DrawRectangle(checkBox1.Checked ? Pens.Red : Pens.Orange, (Rectangle)_selection);
@@ -65,6 +78,7 @@ namespace ZetaOne
 
         private void DrawDataScanner(string name)
         {
+            if (_dataReader == null || _dataReader.EndOfStream) return;
             var axisX = chart1.ChartAreas[name].AxisX;
             var axisY = chart1.ChartAreas[name].AxisY;
             var x = (int)axisX.ValueToPixelPosition(_dataReader.Current.XValue);
@@ -75,7 +89,7 @@ namespace ZetaOne
 
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // イベントは非同期に処理されている？ので
+            // イベントは実行順序が保証されないので
             // データを読み込んでいるときは `_dataLoadCompleted` を false にする必要がある。
             _dataLoadCompleted = false;
 
@@ -100,24 +114,20 @@ namespace ZetaOne
             _dataReader = new DataReader(chart1.Series[0]);
             _dataLoadCompleted = true;
 
-            // Chart の仕様上、一度描画されないと ValueToPixelPosition が使えない。
+            // Chart の仕様上、一度描画されないと ValueToPixelPosition が使えないらしい。
             // RecalculateAxesScale でなんとかならなかった。
             // chart1.ChartAreas[UpperChartAreaName].RecalculateAxesScale();
             chart1.Refresh();
 
-            var axisX = chart1.ChartAreas[UpperChartAreaName].AxisX;
-            var axisY = chart1.ChartAreas[UpperChartAreaName].AxisY;
-
-            // 選択範囲の位置を設定。
-            _selection.X = axisX.ValueToPixelPosition(axisX.Minimum);
-            _selection.Y = axisY.ValueToPixelPosition(axisY.Maximum);
-            _selection.Height = axisY.ValueToPixelPosition(axisY.Minimum) - _selection.Y;
-
             // 下の ChartArea[1] の Y 軸方向のスケールを、上の ChartArea[0] に合わせる。
+            var axisY = chart1.ChartAreas[UpperChartAreaName].AxisY;
             chart1.ChartAreas[LowerChartAreaName].AxisY.Minimum = axisY.Minimum;
             chart1.ChartAreas[LowerChartAreaName].AxisY.Maximum = axisY.Maximum;
             // InnerPlotPosition の二回目以降の呼び出しを禁止する。
             //chart1.ChartAreas[LowerChartAreaName].InnerPlotPosition.Auto = false;
+
+            // 選択範囲を現在の ChartArea[0] に合わせる。
+            AdjustSelection();
 
             textBox1.Clear();
 
@@ -153,6 +163,9 @@ namespace ZetaOne
             bmp.MakeTransparent();
             _graphics = Graphics.FromImage(bmp);
             pictureBox1.BackgroundImage = bmp;
+            pictureBox1.Refresh();
+
+            AdjustSelection();
         }
 
         private void pictureBox1_MouseWheel(object sender, MouseEventArgs e)
@@ -197,10 +210,13 @@ namespace ZetaOne
             var axisX = chart1.ChartAreas[UpperChartAreaName].AxisX;
             var left = axisX.PixelPositionToValue(_selection.X);
             var right = axisX.PixelPositionToValue(_selection.Right);
+            // 応急処置的。_selection が chartArea[0] をはみ出しても落ちなくするため。
+            // そもそも _selection が絶対はみ出さないように作るほうが望ましい。
+            if (left < _dataReader.First.XValue) left = _dataReader.First.XValue;
+            if (right > _dataReader.Last.XValue) right = _dataReader.Last.XValue;
             chart1.ChartAreas[LowerChartAreaName].AxisX.Minimum = left;
             chart1.ChartAreas[LowerChartAreaName].AxisX.Maximum = right;
 
-            if (_dataReader == null) return;
             _graphics.Clear(Color.Transparent);
             DrawSelectedRange();
             DrawDataScanner(UpperChartAreaName);
