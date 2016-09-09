@@ -156,16 +156,22 @@ namespace ZetaOne
             pictureBox1.Focus();
         }
 
+        /// <summary>
+        /// next button
+        /// </summary>
         private void button1_Click(object sender, EventArgs e)
         {
-            if (_dataReader == null) return;
+            if (_dataReader == null || _dataReader.EndOfStream) return;
             var point = _dataReader.Next;
             textBox1.WriteLineBefore("[" + DateTime.FromOADate(point.XValue) + ", " + point.YValues[0] + "]");
         }
 
+        /// <summary>
+        /// prev button
+        /// </summary>
         private void button2_Click(object sender, EventArgs e)
         {
-            if (_dataReader == null) return;
+            if (_dataReader == null || _dataReader.StartOfStream) return;
             var point = _dataReader.Prev;
             textBox1.WriteLineBefore("[" + DateTime.FromOADate(point.XValue) + ", " + point.YValues[0] + "]");
         }
@@ -199,7 +205,7 @@ namespace ZetaOne
 
         private void timer2_Tick(object sender, EventArgs e)
         {
-            if (_dataReader == null) return;
+            if (_dataReader == null || _dataReader.EndOfStream) return;
             var point = _dataReader.Next;
 
             if (checkBox3.Checked)
