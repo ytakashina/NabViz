@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
-using System.Timers;
 using RichControls;
 
 namespace ZetaOne
@@ -96,6 +95,11 @@ namespace ZetaOne
             }
             _dataLoadCompleted = true;
 
+            // なぜかchart1そのものの左端になってしまう
+            //chart1.ChartAreas[0].RecalculateAxesScale();
+            //var axisX = chart1.ChartAreas[0].AxisX;
+            //_selectedRange.X = axisX.ValueToPixelPosition(chart1.Series[0].Points[0].XValue);
+
             textBox1.Clear();
 
             _dataReader = new DataReader(chart1.Series[0]);
@@ -184,9 +188,9 @@ namespace ZetaOne
             DrawDataScanner();
             pictureBox1.Refresh();
 
-
             // 上の Chart の選択範囲に応じて下の Chart のデータを更新。
             if (_fixed) return;
+            chart1.ChartAreas[0].RecalculateAxesScale();
             var axisX = chart1.ChartAreas[0].AxisX;
             var left = axisX.PixelPositionToValue(_selectedRange.X);
             var right = axisX.PixelPositionToValue(_selectedRange.Right);

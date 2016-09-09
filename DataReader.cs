@@ -15,6 +15,8 @@ namespace ZetaOne
         public DataPoint Current => _series.Points[_current];
         public DataPoint Next => _series.Points[++_current];
         public DataPoint Prev => _series.Points[--_current];
+        public DataPoint First => _series.Points[0];
+        public DataPoint Last => _series.Points[_series.Points.Count - 1];
         public bool StartOfStream => _current == 0;
         public bool EndOfStream => _current == _series.Points.Count - 1;
     }
