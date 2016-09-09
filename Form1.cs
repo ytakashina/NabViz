@@ -16,7 +16,6 @@ namespace ZetaOne
         private const string LowerChartAreaName = "Local";
         private Graphics _graphics;
         private RectangleD _selection;
-        private bool _fixed;
         private bool _dataLoadCompleted;
         private DataReader _dataReader;
         private readonly System.Timers.Timer timer2;
@@ -61,7 +60,7 @@ namespace ZetaOne
 
         private void DrawSelectedRange()
         {
-            _graphics.DrawRectangle(_fixed ? Pens.Red : Pens.Orange, (Rectangle)_selection);
+            _graphics.DrawRectangle(checkBox1.Checked ? Pens.Red : Pens.Orange, (Rectangle)_selection);
         }
 
         private void DrawDataScanner(string name)
@@ -126,13 +125,13 @@ namespace ZetaOne
 
         private void pictureBox1_Click(object sender, EventArgs e)
         {
-            _fixed = !_fixed;
+            checkBox1.Checked = !checkBox1.Checked;
         }
 
         private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
         {
             if (!_dataLoadCompleted) return;
-            if (_fixed) return;
+            if (checkBox1.Checked) return;
 
             var axisX = chart1.ChartAreas[UpperChartAreaName].AxisX;
             var axisY = chart1.ChartAreas[UpperChartAreaName].AxisY;
@@ -158,7 +157,7 @@ namespace ZetaOne
 
         private void pictureBox1_MouseWheel(object sender, MouseEventArgs e)
         {
-            if (_fixed) return;
+            if (checkBox1.Checked) return;
             var delta = e.Delta * SystemInformation.MouseWheelScrollLines / 60.0;
             _selection.Width += delta;
             _selection.X -= delta / 2;
