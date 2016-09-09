@@ -163,8 +163,8 @@ namespace ZetaOne
             bmp.MakeTransparent();
             _graphics = Graphics.FromImage(bmp);
             pictureBox1.BackgroundImage = bmp;
-            pictureBox1.Refresh();
 
+            chart1.Refresh(); // 下の AdjustSelection() が動くのに必要。
             AdjustSelection();
         }
 
