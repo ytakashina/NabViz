@@ -6,14 +6,6 @@ namespace RichControls
 {
     public static partial class Extensions
     {
-        public static void Initialize(this Chart self)
-        {
-            self.Series.Clear();
-            self.Legends.Clear();
-            self.ChartAreas.Clear();
-            self.ChartAreas.Add(new ChartArea());
-        }
-
         public static void AddPoints(this Chart self, Tuple<DateTime, double>[] points, string legend)
         {
             self.Legends.Remove(self.Legends.FindByName(legend));

@@ -12,7 +12,7 @@ namespace RichControls
 
         public static void WriteLine(this TextBox self, string str="")
         {
-            self.Lines = (self.Text + str + '\n').Split('\n');
+            self.Write(str + '\n');
         }
 
         public static void WriteBefore(this TextBox self, string str="")
@@ -22,7 +22,7 @@ namespace RichControls
 
         public static void WriteLineBefore(this TextBox self, string str="")
         {
-            self.Lines = (str + '\n' + self.Text).Split('\n');
+            self.WriteBefore(str + '\n');
         }
 
     }

@@ -20,7 +20,6 @@ namespace RichControls
         public static explicit operator Rectangle(RectangleD r)
         {
             return new Rectangle((int)r.X, (int)r.Y, (int)r.Width, (int)r.Height);
-
         }
 
         public static explicit operator RectangleF(RectangleD r)
