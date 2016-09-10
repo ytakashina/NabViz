@@ -69,7 +69,7 @@ namespace ZetaOne
         private void InitializeInnerPlotPosition(string name)
         {
             var inner = chart1.ChartAreas[name].InnerPlotPosition;
-            inner.Width = 92;
+            inner.Width = 94;
             inner.Height = 90;
             inner.X = 6;
             inner.Y = 0;
@@ -87,6 +87,7 @@ namespace ZetaOne
         /// </summary>
         private void AdjustSelection()
         {
+            if (!_dataLoadCompleted) return;
             var axisY = chart1.ChartAreas[UpperChartAreaName].AxisY;
             _selection.Y = axisY.ValueToPixelPosition(axisY.Maximum);
             _selection.Height = axisY.ValueToPixelPosition(axisY.Minimum) - _selection.Y;
@@ -109,6 +110,7 @@ namespace ZetaOne
 
         private void DrawDataScanner(string name)
         {
+            if (!_dataLoadCompleted) return;
             if (_dataReader == null) return;
             var axisX = chart1.ChartAreas[name].AxisX;
             var axisY = chart1.ChartAreas[name].AxisY;
@@ -131,7 +133,6 @@ namespace ZetaOne
                 var maxX = (int)axisX.ValueToPixelPosition(window.Item2.ToOADate());
                 _graphics.FillRectangle(_windowBrush, minX, maxY, maxX - minX, minY - maxY);
             }
-
         }
 
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
@@ -272,6 +273,7 @@ namespace ZetaOne
 
         private void timer2_Tick(object sender, EventArgs e)
         {
+            if (!_dataLoadCompleted) return;
             if (_dataReader == null) return;
             if (_dataReader.EndOfStream)
             {
