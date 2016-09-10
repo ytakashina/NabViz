@@ -247,6 +247,7 @@ namespace ZetaOne
 
             if (_dataReader.EndOfStream)
             {
+                textBox1.Invoke((Action)(() => { textBox1.WriteLineBefore("[I] Reached EOF."); }));
                 checkBox2.Invoke((Action)(() => { checkBox2.Checked = false; }));
                 _dataReader.Rewind();
             }
@@ -254,7 +255,7 @@ namespace ZetaOne
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
-            textBox1.WriteLineBefore("trace " + (checkBox1.Checked ? "ON" : "OFF"));
+            textBox1.WriteLineBefore("[I] Trace: " + (checkBox1.Checked ? "ON" : "OFF"));
         }
 
         private void checkBox2_CheckedChanged(object sender, EventArgs e)
@@ -296,6 +297,12 @@ namespace ZetaOne
         private void radioButton5_CheckedChanged(object sender, EventArgs e)
         {
             timer2.Interval = _defaultInterval / 16;
+        }
+
+        private void checkBox3_CheckedChanged(object sender, EventArgs e)
+        {
+            textBox1.WriteLineBefore("[I] Logging: " + (checkBox3.Checked ? "ON" : "OFF"));
+            if (checkBox3.Checked) textBox1.WriteLineBefore("[W] The Application will crash when speed is high, especially over x4.");
         }
     }
 }
