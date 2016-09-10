@@ -14,7 +14,9 @@ namespace ZetaOne
     {
         private const string UpperChartAreaName = "Global";
         private const string LowerChartAreaName = "Local";
+        private string _fileName;
         private Graphics _graphics;
+        private Brush _windowBrush;
         private RectangleD _selection;
         private bool _dataLoadCompleted;
         private DataReader _dataReader;
@@ -29,8 +31,9 @@ namespace ZetaOne
             foreach (var f in files) listBox1.Items.Add(f);
 
             var bmp = new Bitmap(pictureBox1.Width, pictureBox1.Height, PixelFormat.Format32bppArgb);
-            bmp.MakeTransparent();
+            bmp.MakeTransparent(Color.White);
             _graphics = Graphics.FromImage(bmp);
+            _windowBrush = new SolidBrush(Color.FromArgb(64, Color.Red));
             pictureBox1.BackgroundImage = bmp;
             pictureBox1.Parent = chart1;
 
@@ -115,6 +118,22 @@ namespace ZetaOne
             _graphics.DrawLine(Pens.Red, new Point(x, minY), new Point(x, maxY));
         }
 
+        private void DrawAnomaryWindow(string name)
+        {
+            if (_fileName == null) return;
+            var axisX = chart1.ChartAreas[name].AxisX;
+            var axisY = chart1.ChartAreas[name].AxisY;
+            var minY = (int)axisY.ValueToPixelPosition(axisY.Minimum);
+            var maxY = (int)axisY.ValueToPixelPosition(axisY.Maximum);
+            foreach (var window in AnomalyLabels.Instance[_fileName])
+            {
+                var minX = (int)axisX.ValueToPixelPosition(window.Item1.ToOADate());
+                var maxX = (int)axisX.ValueToPixelPosition(window.Item2.ToOADate());
+                _graphics.FillRectangle(_windowBrush, minX, maxY, maxX - minX, minY - maxY);
+            }
+
+        }
+
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             // イベント駆動は実行時の順序保証がないので、
@@ -122,7 +141,7 @@ namespace ZetaOne
             _dataLoadCompleted = false;
 
             var path = Path.Combine(@"..\data", listBox1.SelectedItem.ToString());
-            var legend = listBox1.SelectedItem.ToString().Split('.')[0];
+            _fileName = listBox1.SelectedItem.ToString();
 
             chart1.Series[0].Points.Clear();
             chart1.Series[1].Points.Clear();
@@ -159,7 +178,6 @@ namespace ZetaOne
             AdjustSelection();
 
             textBox1.Clear();
-
         }
 
         private void Form1_SizeChanged(object sender, EventArgs e)
@@ -249,6 +267,8 @@ namespace ZetaOne
             DrawSelectedRange();
             DrawDataScanner(UpperChartAreaName);
             DrawDataScanner(LowerChartAreaName);
+            DrawAnomaryWindow(UpperChartAreaName);
+            DrawAnomaryWindow(LowerChartAreaName);
             pictureBox1.Refresh();
         }
 

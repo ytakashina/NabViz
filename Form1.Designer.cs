@@ -14,6 +14,7 @@
         protected override void Dispose(bool disposing)
         {
             timer2.Dispose();
+            _graphics.Dispose();
             if (disposing && (components != null))
             {
                 components.Dispose();
