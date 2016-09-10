@@ -109,7 +109,7 @@ namespace ZetaOne
 
         private void DrawDataScanner(string name)
         {
-            if (_dataReader == null || _dataReader.EndOfStream) return;
+            if (_dataReader == null) return;
             var axisX = chart1.ChartAreas[name].AxisX;
             var axisY = chart1.ChartAreas[name].AxisY;
             var x = (int)axisX.ValueToPixelPosition(_dataReader.Current.XValue);
