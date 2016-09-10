@@ -75,7 +75,7 @@ namespace ZetaOne
             inner.Y = 0;
         }
 
-        private void SetSelection()
+        private void InitSelection()
         {
             var axisX = chart1.ChartAreas[UpperChartAreaName].AxisX;
             _selection.X = axisX.ValueToPixelPosition(axisX.Minimum);
@@ -170,11 +170,9 @@ namespace ZetaOne
             var axisY = chart1.ChartAreas[UpperChartAreaName].AxisY;
             chart1.ChartAreas[LowerChartAreaName].AxisY.Minimum = axisY.Minimum;
             chart1.ChartAreas[LowerChartAreaName].AxisY.Maximum = axisY.Maximum;
-            // InnerPlotPosition の二回目以降の呼び出しを禁止する。
-            //chart1.ChartAreas[LowerChartAreaName].InnerPlotPosition.Auto = false;
 
             // 選択範囲を現在の ChartArea[0] に合わせる。
-            SetSelection();
+            InitSelection();
             AdjustSelection();
 
             textBox1.Clear();
@@ -280,7 +278,7 @@ namespace ZetaOne
                 textBox1.Invoke((Action)(() => { textBox1.WriteLineBefore("[I] Reached EOS."); }));
                 checkBox2.Invoke((Action)(() => { checkBox2.Checked = false; }));
                 _dataReader.Rewind();
-                SetSelection();
+                InitSelection();
                 return;
             }
 
