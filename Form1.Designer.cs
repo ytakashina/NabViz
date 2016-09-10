@@ -47,9 +47,9 @@
             this.radioButton4 = new System.Windows.Forms.RadioButton();
             this.radioButton5 = new System.Windows.Forms.RadioButton();
             this.textBox1 = new System.Windows.Forms.TextBox();
-            this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -136,11 +136,11 @@
             // flowLayoutPanel1
             // 
             this.flowLayoutPanel1.Controls.Add(this.checkBox2);
+            this.flowLayoutPanel1.Controls.Add(this.flowLayoutPanel2);
             this.flowLayoutPanel1.Controls.Add(this.checkBox1);
             this.flowLayoutPanel1.Controls.Add(this.checkBox3);
             this.flowLayoutPanel1.Controls.Add(this.button2);
             this.flowLayoutPanel1.Controls.Add(this.button1);
-            this.flowLayoutPanel1.Controls.Add(this.flowLayoutPanel2);
             this.flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.flowLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
@@ -165,7 +165,7 @@
             this.checkBox1.AutoSize = true;
             this.checkBox1.Checked = true;
             this.checkBox1.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox1.Location = new System.Drawing.Point(49, 3);
+            this.checkBox1.Location = new System.Drawing.Point(3, 35);
             this.checkBox1.Name = "checkBox1";
             this.checkBox1.Size = new System.Drawing.Size(41, 22);
             this.checkBox1.TabIndex = 3;
@@ -177,17 +177,18 @@
             // 
             this.checkBox3.Appearance = System.Windows.Forms.Appearance.Button;
             this.checkBox3.AutoSize = true;
-            this.checkBox3.Location = new System.Drawing.Point(96, 3);
+            this.checkBox3.Location = new System.Drawing.Point(50, 35);
             this.checkBox3.Name = "checkBox3";
             this.checkBox3.Size = new System.Drawing.Size(30, 22);
             this.checkBox3.TabIndex = 11;
             this.checkBox3.Text = "log";
             this.checkBox3.UseVisualStyleBackColor = true;
+            this.checkBox3.CheckedChanged += new System.EventHandler(this.checkBox3_CheckedChanged);
             // 
             // button2
             // 
             this.button2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button2.Location = new System.Drawing.Point(132, 3);
+            this.button2.Location = new System.Drawing.Point(86, 35);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(46, 23);
             this.button2.TabIndex = 5;
@@ -198,7 +199,7 @@
             // button1
             // 
             this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button1.Location = new System.Drawing.Point(184, 3);
+            this.button1.Location = new System.Drawing.Point(138, 35);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(46, 23);
             this.button1.TabIndex = 0;
@@ -213,9 +214,10 @@
             this.flowLayoutPanel2.Controls.Add(this.radioButton3);
             this.flowLayoutPanel2.Controls.Add(this.radioButton4);
             this.flowLayoutPanel2.Controls.Add(this.radioButton5);
-            this.flowLayoutPanel2.Location = new System.Drawing.Point(3, 32);
+            this.flowLayoutPanel2.Location = new System.Drawing.Point(46, 0);
+            this.flowLayoutPanel2.Margin = new System.Windows.Forms.Padding(0);
             this.flowLayoutPanel2.Name = "flowLayoutPanel2";
-            this.flowLayoutPanel2.Size = new System.Drawing.Size(205, 32);
+            this.flowLayoutPanel2.Size = new System.Drawing.Size(175, 32);
             this.flowLayoutPanel2.TabIndex = 10;
             // 
             // radioButton1
@@ -289,6 +291,7 @@
             this.textBox1.BackColor = System.Drawing.Color.Black;
             this.textBox1.Cursor = System.Windows.Forms.Cursors.Default;
             this.textBox1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.textBox1.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.textBox1.ForeColor = System.Drawing.Color.Lime;
             this.textBox1.Location = new System.Drawing.Point(0, 0);
             this.textBox1.Multiline = true;
@@ -296,11 +299,6 @@
             this.textBox1.ReadOnly = true;
             this.textBox1.Size = new System.Drawing.Size(240, 197);
             this.textBox1.TabIndex = 6;
-            this.textBox1.WordWrap = false;
-            // 
-            // timer1
-            // 
-            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
             // pictureBox1
             // 
@@ -324,6 +322,10 @@
             this.chart1.Size = new System.Drawing.Size(716, 540);
             this.chart1.TabIndex = 2;
             this.chart1.Text = "chart1";
+            // 
+            // timer1
+            // 
+            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
             // Form1
             // 

@@ -262,6 +262,12 @@ namespace ZetaOne
         {
             if (checkBox2.Checked)
             {
+                if (!_dataLoadCompleted)
+                {
+                    textBox1.WriteLineBefore("[E] Data is not defined.");
+                    checkBox2.Checked = false;
+                    return;
+                }
                 timer2.Start();
                 button1.Enabled = false;
                 button2.Enabled = false;
@@ -302,7 +308,7 @@ namespace ZetaOne
         private void checkBox3_CheckedChanged(object sender, EventArgs e)
         {
             textBox1.WriteLineBefore("[I] Logging: " + (checkBox3.Checked ? "ON" : "OFF"));
-            if (checkBox3.Checked) textBox1.WriteLineBefore("[W] The Application will crash when speed is high, especially over x4.");
+            if (checkBox3.Checked) textBox1.WriteLineBefore("[W] The Application will crash when logging under high speed, especially over x4.");
         }
     }
 }
