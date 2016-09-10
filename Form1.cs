@@ -41,6 +41,11 @@ namespace ZetaOne
 
             chart1.ChartAreas.Add(new ChartArea(UpperChartAreaName));
             chart1.ChartAreas.Add(new ChartArea(LowerChartAreaName));
+            chart1.ChartAreas[UpperChartAreaName].AxisX.LabelStyle.Format = "M/d\nhh:mm";
+            chart1.ChartAreas[LowerChartAreaName].AxisX.LabelStyle.Format = "M/d\nhh:mm";
+            SetInnerPlotPosition(UpperChartAreaName);
+            SetInnerPlotPosition(LowerChartAreaName);
+
             chart1.Series.Add(new Series
             {
                 ChartType = SeriesChartType.Line,
@@ -56,6 +61,15 @@ namespace ZetaOne
                 Color = Color.CornflowerBlue
             });
             _selection.Width = 100;
+        }
+
+        private void SetInnerPlotPosition(string name)
+        {
+            var inner = chart1.ChartAreas[name].InnerPlotPosition;
+            inner.Width = 92;
+            inner.Height = 90;
+            inner.X = 6;
+            inner.Y = 0;
         }
 
         private void SetSelection()
@@ -181,7 +195,9 @@ namespace ZetaOne
             var delta = e.Delta * SystemInformation.MouseWheelScrollLines / 60.0;
             _selection.Width += delta;
             _selection.X -= delta / 2;
+            chart1.ChartAreas[LowerChartAreaName].AxisX.IntervalAutoMode = IntervalAutoMode.VariableCount;
             AdjustSelection();
+            chart1.ChartAreas[LowerChartAreaName].AxisX.IntervalAutoMode = IntervalAutoMode.FixedCount;
         }
 
         private void pictureBox1_MouseEnter(object sender, EventArgs e)
