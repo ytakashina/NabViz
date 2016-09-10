@@ -58,17 +58,31 @@ namespace ZetaOne
             _selection.Width = 100;
         }
 
+        private void SetSelection()
+        {
+            var axisX = chart1.ChartAreas[UpperChartAreaName].AxisX;
+            _selection.X = axisX.ValueToPixelPosition(axisX.Minimum);
+        }
+
         /// <summary>
-        /// このメソッドの実行前には chart1.Refresh() などで一度 Chart を再描画する必要がある。
+        /// Chart 更新後にこのメソッドするには chart1.Refresh() などで一度 Chart を再描画する必要がある。
         /// クソだけど Windows.Forms の Chart の仕様なので仕方ない。
         /// </summary>
         private void AdjustSelection()
         {
-            var axisX = chart1.ChartAreas[UpperChartAreaName].AxisX;
             var axisY = chart1.ChartAreas[UpperChartAreaName].AxisY;
-            _selection.X = axisX.ValueToPixelPosition(axisX.Minimum);
             _selection.Y = axisY.ValueToPixelPosition(axisY.Maximum);
             _selection.Height = axisY.ValueToPixelPosition(axisY.Minimum) - _selection.Y;
+
+            var axisX = chart1.ChartAreas[UpperChartAreaName].AxisX;
+            var minX = axisX.ValueToPixelPosition(axisX.Minimum);
+            var maxX = axisX.ValueToPixelPosition(axisX.Maximum);
+
+            if (_selection.Width < 1) _selection.Width = 1;
+            if (_selection.Width > maxX - minX) _selection.Width = maxX - minX;
+
+            if (_selection.Right > maxX) _selection.X = maxX - _selection.Width;
+            if (_selection.X < minX) _selection.X = minX;
         }
 
         private void DrawSelectedRange()
@@ -127,34 +141,11 @@ namespace ZetaOne
             //chart1.ChartAreas[LowerChartAreaName].InnerPlotPosition.Auto = false;
 
             // 選択範囲を現在の ChartArea[0] に合わせる。
+            SetSelection();
             AdjustSelection();
 
             textBox1.Clear();
 
-        }
-
-        private void pictureBox1_Click(object sender, EventArgs e)
-        {
-            checkBox1.Checked = !checkBox1.Checked;
-        }
-
-        private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
-        {
-            if (!_dataLoadCompleted) return;
-            if (checkBox1.Checked) return; // trace が ON だったら無視。
-
-            var axisX = chart1.ChartAreas[UpperChartAreaName].AxisX;
-            var axisY = chart1.ChartAreas[UpperChartAreaName].AxisY;
-            var minX = axisX.ValueToPixelPosition(axisX.Minimum);
-            var maxX = axisX.ValueToPixelPosition(axisX.Maximum);
-            var minY = axisY.ValueToPixelPosition(axisY.Minimum);
-            var mousePosition = chart1.PointToClient(MousePosition);
-
-            if (mousePosition.Y > minY) return;
-
-            _selection.X = mousePosition.X - _selection.Width / 2;
-            if (_selection.Right > maxX) _selection.X = maxX - _selection.Width;
-            if (_selection.X < minX) _selection.X = minX;
         }
 
         private void Form1_SizeChanged(object sender, EventArgs e)
@@ -168,18 +159,39 @@ namespace ZetaOne
             AdjustSelection();
         }
 
+        private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (!_dataLoadCompleted) return;
+            if (checkBox1.Checked) return; // trace が ON だったら無視。
+
+            var axisY = chart1.ChartAreas[UpperChartAreaName].AxisY;
+            var minY = axisY.ValueToPixelPosition(axisY.Minimum);
+            var mousePosition = chart1.PointToClient(MousePosition);
+
+            if (mousePosition.Y > minY) return;
+
+            _selection.X = mousePosition.X - _selection.Width / 2;
+            AdjustSelection();
+        }
+
         private void pictureBox1_MouseWheel(object sender, MouseEventArgs e)
         {
-            if (checkBox1.Checked) return;
+            if (!_dataLoadCompleted) return;
+            if (checkBox1.Checked) return; // trace が ON だったら無視。
             var delta = e.Delta * SystemInformation.MouseWheelScrollLines / 60.0;
             _selection.Width += delta;
             _selection.X -= delta / 2;
-            if (_selection.Width < 1) _selection.Width = 1;
+            AdjustSelection();
         }
 
         private void pictureBox1_MouseEnter(object sender, EventArgs e)
         {
             pictureBox1.Focus();
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+            checkBox1.Checked = !checkBox1.Checked;
         }
 
         /// <summary>
@@ -208,14 +220,14 @@ namespace ZetaOne
 
             // 上の Chart の選択範囲に応じて下の Chart のデータを更新。
             var axisX = chart1.ChartAreas[UpperChartAreaName].AxisX;
-            var left = axisX.PixelPositionToValue(_selection.X);
-            var right = axisX.PixelPositionToValue(_selection.Right);
+            var minX = axisX.PixelPositionToValue(_selection.X);
+            var maxX = axisX.PixelPositionToValue(_selection.Right);
             // 応急処置的。_selection が chartArea[0] をはみ出しても落ちなくするため。
             // そもそも _selection が絶対はみ出さないように作るほうが望ましい。
-            if (left < _dataReader.First.XValue) left = _dataReader.First.XValue;
-            if (right > _dataReader.Last.XValue) right = _dataReader.Last.XValue;
-            chart1.ChartAreas[LowerChartAreaName].AxisX.Minimum = left;
-            chart1.ChartAreas[LowerChartAreaName].AxisX.Maximum = right;
+            if (minX < _dataReader.First.XValue) minX = _dataReader.First.XValue;
+            if (maxX > _dataReader.Last.XValue) maxX = _dataReader.Last.XValue;
+            chart1.ChartAreas[LowerChartAreaName].AxisX.Minimum = minX;
+            chart1.ChartAreas[LowerChartAreaName].AxisX.Maximum = maxX;
 
             _graphics.Clear(Color.Transparent);
             DrawSelectedRange();
@@ -232,6 +244,7 @@ namespace ZetaOne
                 textBox1.Invoke((Action)(() => { textBox1.WriteLineBefore("[I] Reached EOS."); }));
                 checkBox2.Invoke((Action)(() => { checkBox2.Checked = false; }));
                 _dataReader.Rewind();
+                SetSelection();
                 return;
             }
 
@@ -243,6 +256,8 @@ namespace ZetaOne
                 var axisX = chart1.ChartAreas[UpperChartAreaName].AxisX;
                 var x = axisX.ValueToPixelPosition(_dataReader.Current.XValue) - _selection.Width / 2;
                 if (x > _selection.X) _selection.X = x;
+                var maxX = axisX.ValueToPixelPosition(axisX.Maximum);
+                if (_selection.Right > maxX) _selection.X = maxX - _selection.Width;
             }
 
             // log
@@ -281,6 +296,12 @@ namespace ZetaOne
             }
         }
 
+        private void checkBox3_CheckedChanged(object sender, EventArgs e)
+        {
+            textBox1.WriteLineBefore("[I] Logging: " + (checkBox3.Checked ? "ON" : "OFF"));
+            if (checkBox3.Checked) textBox1.WriteLineBefore("[W] The Application will crash when logging under high speed, especially over x4.");
+        }
+
         private void radioButton1_CheckedChanged(object sender, EventArgs e)
         {
             timer2.Interval = _defaultInterval;
@@ -306,10 +327,5 @@ namespace ZetaOne
             timer2.Interval = _defaultInterval / 16;
         }
 
-        private void checkBox3_CheckedChanged(object sender, EventArgs e)
-        {
-            textBox1.WriteLineBefore("[I] Logging: " + (checkBox3.Checked ? "ON" : "OFF"));
-            if (checkBox3.Checked) textBox1.WriteLineBefore("[W] The Application will crash when logging under high speed, especially over x4.");
-        }
     }
 }
