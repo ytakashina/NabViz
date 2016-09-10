@@ -152,7 +152,7 @@ namespace ZetaOne
                 while (!sr.EndOfStream)
                 {
                     var line = sr.ReadLine().Split(',');
-                    var dt = DateTime.ParseExact(line[0], "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+                    var dt = DateTime.ParseExact(line[0], "yyyy-MM-dd HH:mm:ss", null);
                     var value = double.Parse(line[1]);
                     chart1.Series[0].Points.AddXY(dt, value);
                     chart1.Series[1].Points.AddXY(dt, value);
