@@ -46,8 +46,8 @@ namespace ZetaOne
             chart1.ChartAreas.Add(new ChartArea(LowerChartAreaName));
             chart1.ChartAreas[UpperChartAreaName].AxisX.LabelStyle.Format = "M/d\nhh:mm";
             chart1.ChartAreas[LowerChartAreaName].AxisX.LabelStyle.Format = "M/d\nhh:mm";
-            SetInnerPlotPosition(UpperChartAreaName);
-            SetInnerPlotPosition(LowerChartAreaName);
+            InitInnerPlotPosition(UpperChartAreaName);
+            InitInnerPlotPosition(LowerChartAreaName);
 
             chart1.Series.Add(new Series
             {
@@ -66,7 +66,7 @@ namespace ZetaOne
             _selection.Width = 100;
         }
 
-        private void SetInnerPlotPosition(string name)
+        private void InitInnerPlotPosition(string name)
         {
             var inner = chart1.ChartAreas[name].InnerPlotPosition;
             inner.Width = 92;
