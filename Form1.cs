@@ -46,8 +46,8 @@ namespace ZetaOne
             chart1.ChartAreas.Add(new ChartArea(LowerChartAreaName));
             chart1.ChartAreas[UpperChartAreaName].AxisX.LabelStyle.Format = "M/d\nhh:mm";
             chart1.ChartAreas[LowerChartAreaName].AxisX.LabelStyle.Format = "M/d\nhh:mm";
-            InitInnerPlotPosition(UpperChartAreaName);
-            InitInnerPlotPosition(LowerChartAreaName);
+            InitializeInnerPlotPosition(UpperChartAreaName);
+            InitializeInnerPlotPosition(LowerChartAreaName);
 
             chart1.Series.Add(new Series
             {
@@ -66,7 +66,7 @@ namespace ZetaOne
             _selection.Width = 100;
         }
 
-        private void InitInnerPlotPosition(string name)
+        private void InitializeInnerPlotPosition(string name)
         {
             var inner = chart1.ChartAreas[name].InnerPlotPosition;
             inner.Width = 92;
@@ -75,7 +75,7 @@ namespace ZetaOne
             inner.Y = 0;
         }
 
-        private void InitSelection()
+        private void InitializeSelection()
         {
             var axisX = chart1.ChartAreas[UpperChartAreaName].AxisX;
             _selection.X = axisX.ValueToPixelPosition(axisX.Minimum);
@@ -172,7 +172,7 @@ namespace ZetaOne
             chart1.ChartAreas[LowerChartAreaName].AxisY.Maximum = axisY.Maximum;
 
             // 選択範囲を現在の ChartArea[0] に合わせる。
-            InitSelection();
+            InitializeSelection();
             AdjustSelection();
 
             textBox1.Clear();
@@ -278,7 +278,7 @@ namespace ZetaOne
                 textBox1.Invoke((Action)(() => { textBox1.WriteLineBefore("[I] Reached EOS."); }));
                 checkBox2.Invoke((Action)(() => { checkBox2.Checked = false; }));
                 _dataReader.Rewind();
-                InitSelection();
+                InitializeSelection();
                 return;
             }
 
