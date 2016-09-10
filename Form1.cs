@@ -141,8 +141,7 @@ namespace ZetaOne
         private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
         {
             if (!_dataLoadCompleted) return;
-            // trace が ON だったら無視。
-            if (checkBox1.Checked) return;
+            if (checkBox1.Checked) return; // trace が ON だったら無視。
 
             var axisX = chart1.ChartAreas[UpperChartAreaName].AxisX;
             var axisY = chart1.ChartAreas[UpperChartAreaName].AxisY;
@@ -227,7 +226,15 @@ namespace ZetaOne
 
         private void timer2_Tick(object sender, EventArgs e)
         {
-            if (_dataReader == null || _dataReader.EndOfStream) return;
+            if (_dataReader == null) return;
+            if (_dataReader.EndOfStream)
+            {
+                textBox1.Invoke((Action)(() => { textBox1.WriteLineBefore("[I] Reached EOS."); }));
+                checkBox2.Invoke((Action)(() => { checkBox2.Checked = false; }));
+                _dataReader.Rewind();
+                return;
+            }
+
             var point = _dataReader.Next;
 
             // trace
@@ -245,12 +252,6 @@ namespace ZetaOne
                 textBox1.Invoke((Action)(() => { textBox1.WriteLineBefore(str); }));
             }
 
-            if (_dataReader.EndOfStream)
-            {
-                textBox1.Invoke((Action)(() => { textBox1.WriteLineBefore("[I] Reached EOF."); }));
-                checkBox2.Invoke((Action)(() => { checkBox2.Checked = false; }));
-                _dataReader.Rewind();
-            }
         }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
