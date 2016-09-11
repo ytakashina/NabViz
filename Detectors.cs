@@ -21,30 +21,21 @@ namespace ZetaOne
         public class WindowedGaussian : Detector
         {
             private readonly int _windowSize;
-            private readonly int _stepSize;
             private readonly List<double> _windowData;
-            private readonly List<double> _stepBuffer;
             private double _mean;
             private double _standardDeviation;
 
-            private static WindowedGaussian _instance;
-            public static WindowedGaussian Instance => _instance ?? (_instance = new WindowedGaussian());
-
-            private WindowedGaussian()
+            public WindowedGaussian()
             {
                 _windowSize = 6400;
-                _stepSize = 100;
                 _windowData = new List<double>();
-                _stepBuffer = new List<double>();
                 _mean = 0;
                 _standardDeviation = 1;
-                _instance = this;
             }
 
             public override void Initialize()
             {
                 _windowData.Clear();
-                _stepBuffer.Clear();
                 _mean = 0;
                 _standardDeviation = 1;
             }
@@ -69,14 +60,6 @@ namespace ZetaOne
                     _windowData.RemoveAt(0);
                     _windowData.Add(input);
                     UpdateWindow();
-                    //_stepBuffer.Add(input);
-                    //if (_stepBuffer.Count == _stepSize)
-                    //{
-                    //    _windowData.RemoveRange(0, _stepSize);
-                    //    _windowData.AddRange(_stepBuffer);
-                    //    _stepBuffer.Clear();
-                    //    UpdateWindow();
-                    //}
                 }
             }
 
