@@ -10,6 +10,7 @@ namespace ZetaOne
     {
         public abstract class Detector
         {
+            public abstract void Initialize();
             public abstract double AnomalyScore(DataPoint dataPoint);
             public abstract void Record(DataPoint dataPoint);
             public string Name => ToString().Split('+').Last();
@@ -32,19 +33,27 @@ namespace ZetaOne
             private WindowedGaussian()
             {
                 _windowSize = 6400;
+                _stepSize = 100;
                 _windowData = new List<double>();
                 _stepBuffer = new List<double>();
-                _stepSize = 100;
                 _mean = 0;
                 _standardDeviation = 1;
                 _instance = this;
+            }
+
+            public override void Initialize()
+            {
+                _windowData.Clear();
+                _stepBuffer.Clear();
+                _mean = 0;
+                _standardDeviation = 1;
             }
 
             public override double AnomalyScore(DataPoint dataPoint)
             {
                 var input = dataPoint.YValues[0];
                 if (_windowData.Count == 0) return 0;
-                return 1 - NormalProbability(input, _mean, _standardDeviation);
+                return 1 - QFunction(input, _mean, _standardDeviation);
             }
 
             public override void Record(DataPoint dataPoint)
@@ -57,14 +66,17 @@ namespace ZetaOne
                 }
                 else
                 {
-                    _stepBuffer.Add(input);
-                    if (_stepBuffer.Count == _stepSize)
-                    {
-                        _windowData.RemoveRange(0, _stepSize);
-                        _windowData.AddRange(_stepBuffer);
-                        _stepBuffer.Clear();
-                        UpdateWindow();
-                    }
+                    _windowData.RemoveAt(0);
+                    _windowData.Add(input);
+                    UpdateWindow();
+                    //_stepBuffer.Add(input);
+                    //if (_stepBuffer.Count == _stepSize)
+                    //{
+                    //    _windowData.RemoveRange(0, _stepSize);
+                    //    _windowData.AddRange(_stepBuffer);
+                    //    _stepBuffer.Clear();
+                    //    UpdateWindow();
+                    //}
                 }
             }
 
