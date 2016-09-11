@@ -6,6 +6,7 @@ using System.Linq;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 using RichForms;
+using static ZetaOne.Detectors;
 
 namespace ZetaOne
 {
@@ -13,6 +14,7 @@ namespace ZetaOne
     {
         private const string UpperChartArea = "Global";
         private const string LowerChartArea = "Local";
+        private readonly Detector[] _detectors;
         private string _fileName;
         private Graphics _graphics;
         private readonly Brush _windowBrush;
@@ -25,6 +27,7 @@ namespace ZetaOne
         public Form1()
         {
             InitializeComponent();
+
             var dir = new DirectoryInfo(@"..\data");
             var files = dir.GetFiles("*.csv").Select(str => str.ToString());
             foreach (var f in files) listBox1.Items.Add(f);
@@ -64,6 +67,20 @@ namespace ZetaOne
                 ChartArea = LowerChartArea,
                 Color = Color.CornflowerBlue
             });
+
+            _detectors = new Detector[] { WindowedGaussian.Instance };
+            foreach (var detector in _detectors)
+            {
+                chart1.Series.Add(new Series
+                {
+                    Name = detector.Name,
+                    ChartType = SeriesChartType.Line,
+                    XValueType = ChartValueType.DateTime,
+                    ChartArea = UpperChartArea,
+                    Color = Color.Red
+                });
+            }
+
             _selection.Width = 100;
         }
 
@@ -138,6 +155,9 @@ namespace ZetaOne
 
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
+            // 実行を止める。
+            checkBox2.Checked = false;
+
             // イベント駆動は実行時の順序保証がないので、
             // 明示的にデータの読み込みの終了を管理する必要がある。
             _dataLoadCompleted = false;
@@ -256,10 +276,6 @@ namespace ZetaOne
             var axisX = chart1.ChartAreas[UpperChartArea].AxisX;
             var minX = axisX.PixelPositionToValue(_selection.X);
             var maxX = axisX.PixelPositionToValue(_selection.Right);
-            // 応急処置的。_selection が chartArea[0] をはみ出しても落ちなくするため。
-            // そもそも _selection が絶対はみ出さないように作るほうが望ましい。
-            if (minX < _dataReader.First.XValue) minX = _dataReader.First.XValue;
-            if (maxX > _dataReader.Last.XValue) maxX = _dataReader.Last.XValue;
             chart1.ChartAreas[LowerChartArea].AxisX.Minimum = minX;
             chart1.ChartAreas[LowerChartArea].AxisX.Maximum = maxX;
 
@@ -284,6 +300,12 @@ namespace ZetaOne
             }
 
             var point = _dataReader.Next;
+            foreach (var detector in _detectors)
+            {
+                var score = detector.AnomalyScore(point) * chart1.ChartAreas[UpperChartArea].AxisY.Maximum / 2;
+                detector.Record(point);
+                chart1.Invoke((Action)(() => chart1.Series[detector.Name].Points.AddXY(point.XValue, score)));
+            }
 
             // trace
             if (checkBox1.Checked)

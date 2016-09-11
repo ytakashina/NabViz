@@ -1,20 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace ZetaOne
 {
     class AnomalyLabels
     {
         private static AnomalyLabels _instance;
-        private Dictionary<string, List<Tuple<DateTime, DateTime>>> _windows;
+        private readonly Dictionary<string, List<Tuple<DateTime, DateTime>>> _windows;
 
         private AnomalyLabels()
         {
