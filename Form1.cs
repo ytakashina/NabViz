@@ -181,7 +181,7 @@ namespace ZetaOne
             // 明示的にデータの読み込みの終了を管理する必要がある。
             _dataLoadCompleted = false;
 
-            var path = Path.Combine(@"..\data", listBox1.SelectedItem.ToString());
+            var path = Path.Combine("..", "data", listBox1.SelectedItem.ToString());
             _fileName = listBox1.SelectedItem.ToString();
 
             chart1.Series[UpperChartArea].Points.Clear();

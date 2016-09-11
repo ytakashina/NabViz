@@ -15,7 +15,8 @@ namespace ZetaOne
         private AnomalyLabels()
         {
             _windows = new Dictionary<string, List<Tuple<DateTime, DateTime>>>();
-            var sr = new StreamReader(@"..\labels\combined_windows.json", Encoding.GetEncoding("utf-8"));
+            var path = Path.Combine("..", "labels", "combined_windows.json");
+            var sr = new StreamReader(path, Encoding.GetEncoding("utf-8"));
             string json = sr.ReadToEnd();
             sr.Close();
             var dict = JsonConvert.DeserializeObject<Dictionary<string, List<List<string>>>>(json);
