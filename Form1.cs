@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -12,11 +11,11 @@ namespace ZetaOne
 {
     public partial class Form1 : Form
     {
-        private const string UpperChartAreaName = "Global";
-        private const string LowerChartAreaName = "Local";
+        private const string UpperChartArea = "Global";
+        private const string LowerChartArea = "Local";
         private string _fileName;
         private Graphics _graphics;
-        private Brush _windowBrush;
+        private readonly Brush _windowBrush;
         private RectangleD _selection;
         private bool _dataLoadCompleted;
         private DataReader _dataReader;
@@ -42,25 +41,27 @@ namespace ZetaOne
             timer2.Elapsed += timer2_Tick;
             _defaultInterval = timer2.Interval;
 
-            chart1.ChartAreas.Add(new ChartArea(UpperChartAreaName));
-            chart1.ChartAreas.Add(new ChartArea(LowerChartAreaName));
-            chart1.ChartAreas[UpperChartAreaName].AxisX.LabelStyle.Format = "M/d\nhh:mm";
-            chart1.ChartAreas[LowerChartAreaName].AxisX.LabelStyle.Format = "M/d\nhh:mm";
-            InitializeInnerPlotPosition(UpperChartAreaName);
-            InitializeInnerPlotPosition(LowerChartAreaName);
+            chart1.ChartAreas.Add(new ChartArea(UpperChartArea));
+            chart1.ChartAreas.Add(new ChartArea(LowerChartArea));
+            chart1.ChartAreas[UpperChartArea].AxisX.LabelStyle.Format = "M/d\nhh:mm";
+            chart1.ChartAreas[LowerChartArea].AxisX.LabelStyle.Format = "M/d\nhh:mm";
+            InitializeInnerPlotPosition(UpperChartArea);
+            InitializeInnerPlotPosition(LowerChartArea);
 
             chart1.Series.Add(new Series
             {
+                Name = UpperChartArea,
                 ChartType = SeriesChartType.Line,
                 XValueType = ChartValueType.DateTime,
-                ChartArea = UpperChartAreaName,
+                ChartArea = UpperChartArea,
                 Color = Color.CornflowerBlue
             });
             chart1.Series.Add(new Series
             {
+                Name = LowerChartArea,
                 ChartType = SeriesChartType.Line,
                 XValueType = ChartValueType.DateTime,
-                ChartArea = LowerChartAreaName,
+                ChartArea = LowerChartArea,
                 Color = Color.CornflowerBlue
             });
             _selection.Width = 100;
@@ -77,7 +78,7 @@ namespace ZetaOne
 
         private void InitializeSelection()
         {
-            var axisX = chart1.ChartAreas[UpperChartAreaName].AxisX;
+            var axisX = chart1.ChartAreas[UpperChartArea].AxisX;
             _selection.X = axisX.ValueToPixelPosition(axisX.Minimum);
         }
 
@@ -88,11 +89,11 @@ namespace ZetaOne
         private void AdjustSelection()
         {
             if (!_dataLoadCompleted) return;
-            var axisY = chart1.ChartAreas[UpperChartAreaName].AxisY;
+            var axisY = chart1.ChartAreas[UpperChartArea].AxisY;
             _selection.Y = axisY.ValueToPixelPosition(axisY.Maximum);
             _selection.Height = axisY.ValueToPixelPosition(axisY.Minimum) - _selection.Y;
 
-            var axisX = chart1.ChartAreas[UpperChartAreaName].AxisX;
+            var axisX = chart1.ChartAreas[UpperChartArea].AxisX;
             var minX = axisX.ValueToPixelPosition(axisX.Minimum);
             var maxX = axisX.ValueToPixelPosition(axisX.Maximum);
 
@@ -144,8 +145,8 @@ namespace ZetaOne
             var path = Path.Combine(@"..\data", listBox1.SelectedItem.ToString());
             _fileName = listBox1.SelectedItem.ToString();
 
-            chart1.Series[0].Points.Clear();
-            chart1.Series[1].Points.Clear();
+            chart1.Series[UpperChartArea].Points.Clear();
+            chart1.Series[LowerChartArea].Points.Clear();
 
             using (var sr = new StreamReader(path))
             {
@@ -155,22 +156,22 @@ namespace ZetaOne
                     var line = sr.ReadLine().Split(',');
                     var dt = DateTime.ParseExact(line[0], "yyyy-MM-dd HH:mm:ss", null);
                     var value = double.Parse(line[1]);
-                    chart1.Series[0].Points.AddXY(dt, value);
-                    chart1.Series[1].Points.AddXY(dt, value);
+                    chart1.Series[UpperChartArea].Points.AddXY(dt, value);
+                    chart1.Series[LowerChartArea].Points.AddXY(dt, value);
                 }
             }
-            _dataReader = new DataReader(chart1.Series[0]);
+            _dataReader = new DataReader(chart1.Series[UpperChartArea]);
             _dataLoadCompleted = true;
 
             // Chart の仕様上、一度描画されないと ValueToPixelPosition が使えないらしい。
             // RecalculateAxesScale でなんとかならなかった。
-            // chart1.ChartAreas[UpperChartAreaName].RecalculateAxesScale();
+            // chart1.ChartAreas[UpperChartArea].RecalculateAxesScale();
             chart1.Refresh();
 
             // 下の ChartArea[1] の Y 軸方向のスケールを、上の ChartArea[0] に合わせる。
-            var axisY = chart1.ChartAreas[UpperChartAreaName].AxisY;
-            chart1.ChartAreas[LowerChartAreaName].AxisY.Minimum = axisY.Minimum;
-            chart1.ChartAreas[LowerChartAreaName].AxisY.Maximum = axisY.Maximum;
+            var axisY = chart1.ChartAreas[UpperChartArea].AxisY;
+            chart1.ChartAreas[LowerChartArea].AxisY.Minimum = axisY.Minimum;
+            chart1.ChartAreas[LowerChartArea].AxisY.Maximum = axisY.Maximum;
 
             // 選択範囲を現在の ChartArea[0] に合わせる。
             InitializeSelection();
@@ -195,7 +196,7 @@ namespace ZetaOne
             if (!_dataLoadCompleted) return;
             if (checkBox1.Checked) return; // trace が ON だったら無視。
 
-            var axisY = chart1.ChartAreas[UpperChartAreaName].AxisY;
+            var axisY = chart1.ChartAreas[UpperChartArea].AxisY;
             var minY = axisY.ValueToPixelPosition(axisY.Minimum);
             var mousePosition = chart1.PointToClient(MousePosition);
 
@@ -212,9 +213,9 @@ namespace ZetaOne
             var delta = e.Delta * SystemInformation.MouseWheelScrollLines / 60.0;
             _selection.Width += delta;
             _selection.X -= delta / 2;
-            chart1.ChartAreas[LowerChartAreaName].AxisX.IntervalAutoMode = IntervalAutoMode.VariableCount;
+            chart1.ChartAreas[LowerChartArea].AxisX.IntervalAutoMode = IntervalAutoMode.VariableCount;
             AdjustSelection();
-            chart1.ChartAreas[LowerChartAreaName].AxisX.IntervalAutoMode = IntervalAutoMode.FixedCount;
+            chart1.ChartAreas[LowerChartArea].AxisX.IntervalAutoMode = IntervalAutoMode.FixedCount;
         }
 
         private void pictureBox1_MouseEnter(object sender, EventArgs e)
@@ -252,22 +253,22 @@ namespace ZetaOne
             if (!_dataLoadCompleted) return;
 
             // 上の Chart の選択範囲に応じて下の Chart のデータを更新。
-            var axisX = chart1.ChartAreas[UpperChartAreaName].AxisX;
+            var axisX = chart1.ChartAreas[UpperChartArea].AxisX;
             var minX = axisX.PixelPositionToValue(_selection.X);
             var maxX = axisX.PixelPositionToValue(_selection.Right);
             // 応急処置的。_selection が chartArea[0] をはみ出しても落ちなくするため。
             // そもそも _selection が絶対はみ出さないように作るほうが望ましい。
             if (minX < _dataReader.First.XValue) minX = _dataReader.First.XValue;
             if (maxX > _dataReader.Last.XValue) maxX = _dataReader.Last.XValue;
-            chart1.ChartAreas[LowerChartAreaName].AxisX.Minimum = minX;
-            chart1.ChartAreas[LowerChartAreaName].AxisX.Maximum = maxX;
+            chart1.ChartAreas[LowerChartArea].AxisX.Minimum = minX;
+            chart1.ChartAreas[LowerChartArea].AxisX.Maximum = maxX;
 
             _graphics.Clear(Color.Transparent);
             DrawSelectedRange();
-            DrawDataScanner(UpperChartAreaName);
-            DrawDataScanner(LowerChartAreaName);
-            DrawAnomaryWindow(UpperChartAreaName);
-            DrawAnomaryWindow(LowerChartAreaName);
+            DrawDataScanner(UpperChartArea);
+            DrawDataScanner(LowerChartArea);
+            DrawAnomaryWindow(UpperChartArea);
+            DrawAnomaryWindow(LowerChartArea);
             pictureBox1.Refresh();
         }
 
@@ -279,8 +280,6 @@ namespace ZetaOne
             {
                 textBox1.Invoke((Action)(() => { textBox1.WriteLineBefore("[I] Reached EOS."); }));
                 checkBox2.Invoke((Action)(() => { checkBox2.Checked = false; }));
-                _dataReader.Rewind();
-                InitializeSelection();
                 return;
             }
 
@@ -289,7 +288,7 @@ namespace ZetaOne
             // trace
             if (checkBox1.Checked)
             {
-                var axisX = chart1.ChartAreas[UpperChartAreaName].AxisX;
+                var axisX = chart1.ChartAreas[UpperChartArea].AxisX;
                 var x = axisX.ValueToPixelPosition(_dataReader.Current.XValue) - _selection.Width / 2;
                 if (x > _selection.X) _selection.X = x;
                 var maxX = axisX.ValueToPixelPosition(axisX.Maximum);
