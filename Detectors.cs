@@ -61,9 +61,9 @@ namespace ZetaOne
         class WindowedGaussianDetector
         {
             private readonly int _windowSize;
+            private readonly int _stepSize;
             private readonly List<double> _windowData;
             private readonly List<double> _stepBuffer;
-            private readonly int _stepSize;
             private double _mean;
             private double _standardDeviation;
 
