@@ -42,7 +42,7 @@ namespace ZetaOne.Tests
         }
 
         [TestMethod()]
-        public void NormalProbabilityTest()
+        public void QFunctionTest()
         {
         }
     }

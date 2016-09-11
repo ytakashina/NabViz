@@ -44,7 +44,7 @@ namespace ZetaOne
             {
                 var input = dataPoint.YValues[0];
                 if (_windowData.Count == 0) return 0;
-                return 1 - NormalProbability(input, _mean, _standardDeviation);
+                return 1 - QFunction(input, _mean, _standardDeviation);
             }
 
             public override void Record(DataPoint dataPoint)

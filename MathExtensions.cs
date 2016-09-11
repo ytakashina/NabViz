@@ -24,11 +24,9 @@ namespace ZetaOne
             const double a5 = 1.061405429;
             const double p = 0.3275911;
 
-            // Save the sign of x
             var sign = Math.Sign(x);
             x = Math.Abs(x);
 
-            // A&S formula 7.1.26
             var t = 1.0 / (1.0 + p * x);
             var y = 1.0 - ((((a5 * t + a4) * t + a3) * t + a2) * t + a1) * t * Math.Exp(-x * x);
 
@@ -40,15 +38,15 @@ namespace ZetaOne
             return 1 - Erf(x);
         }
 
-        public static double NormalProbability(double x, double mean, double standardDeviation)
+        public static double QFunction(double x, double mean, double standardDeviation)
         {
             if (x < mean)
             {
-                var xp = 2 * mean - x;
-                return 1.0 - NormalProbability(xp, mean, standardDeviation);
+                x = 2 * mean - x;
+                return QFunction(x, mean, standardDeviation);
             }
             var z = (x - mean) / standardDeviation;
-            return 0.5 * Erfc(z / Math.Sqrt(2));
+            return Erfc(z / Math.Sqrt(2)) / 2;
         }
     }
 }
