@@ -56,9 +56,15 @@ namespace ZetaOne
 
     class Detectors
     {
+        interface IDetector
+        {
+            double AnomalyScore(DataPoint dataPoint);
+            void Record(DataPoint dataPoint);
+        }
+
         // SlidingThrethold (WindowedGaussian)
         // 閾値法
-        class WindowedGaussianDetector
+        class WindowedGaussianDetector : IDetector
         {
             private readonly int _windowSize;
             private readonly int _stepSize;
@@ -67,7 +73,10 @@ namespace ZetaOne
             private double _mean;
             private double _standardDeviation;
 
-            public WindowedGaussianDetector()
+            private static IDetector _instance;
+            public static IDetector Instance => _instance ?? (_instance = new WindowedGaussianDetector());
+
+            private WindowedGaussianDetector()
             {
                 _windowSize = 6400;
                 _windowData = new List<double>();
@@ -75,25 +84,27 @@ namespace ZetaOne
                 _stepSize = 100;
                 _mean = 0;
                 _standardDeviation = 1;
+                _instance = this;
             }
 
-            public double HandleRecord(DataPoint dataPoint)
+            public double AnomalyScore(DataPoint dataPoint)
             {
-                var anomaryScore = 0.0;
-                var inputValue = dataPoint.YValues[0];
-                if (_windowData.Count > 0)
-                {
-                    anomaryScore = 1 - NormalProbability(inputValue, _mean, _standardDeviation);
-                }
+                var input = dataPoint.YValues[0];
+                if (_windowData.Count == 0) return 0;
+                return 1 - NormalProbability(input, _mean, _standardDeviation);
+            }
 
+            public void Record(DataPoint dataPoint)
+            {
+                var input = dataPoint.YValues[0];
                 if (_windowData.Count < _windowSize)
                 {
-                    _windowData.Add(inputValue);
+                    _windowData.Add(input);
                     UpdateWindow();
                 }
                 else
                 {
-                    _stepBuffer.Add(inputValue);
+                    _stepBuffer.Add(input);
                     if (_stepBuffer.Count == _stepSize)
                     {
                         _windowData.RemoveRange(0, _stepSize);
@@ -102,7 +113,6 @@ namespace ZetaOne
                         UpdateWindow();
                     }
                 }
-                return anomaryScore;
             }
 
             private void UpdateWindow()
