@@ -57,14 +57,17 @@ namespace ZetaOne
                 }
                 else
                 {
-                    _stepBuffer.Add(input);
-                    if (_stepBuffer.Count == _stepSize)
-                    {
-                        _windowData.RemoveRange(0, _stepSize);
-                        _windowData.AddRange(_stepBuffer);
-                        _stepBuffer.Clear();
-                        UpdateWindow();
-                    }
+                    _windowData.RemoveAt(0);
+                    _windowData.Add(input);
+                    UpdateWindow();
+                    //_stepBuffer.Add(input);
+                    //if (_stepBuffer.Count == _stepSize)
+                    //{
+                    //    _windowData.RemoveRange(0, _stepSize);
+                    //    _windowData.AddRange(_stepBuffer);
+                    //    _stepBuffer.Clear();
+                    //    UpdateWindow();
+                    //}
                 }
             }
 
