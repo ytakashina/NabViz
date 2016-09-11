@@ -51,6 +51,9 @@ namespace ZetaOne
             InitializeInnerPlotPosition(UpperChartArea);
             InitializeInnerPlotPosition(LowerChartArea);
 
+            // 本当だったら 1 つの Series を上下両方の ChartArea に描画したいのだが、
+            // Chart の仕様でできないっぽい？
+            // Detector の Series を 2 つ作っているのもそのため。
             chart1.Series.Add(new Series
             {
                 Name = UpperChartArea,
@@ -69,15 +72,31 @@ namespace ZetaOne
             });
 
             _detectors = new Detector[] { WindowedGaussian.Instance };
-            foreach (var detector in _detectors)
+            for (var i = 0; i < _detectors.Length; i++)
             {
                 chart1.Series.Add(new Series
                 {
-                    Name = detector.Name,
-                    ChartType = SeriesChartType.Line,
+                    Name = UpperChartArea + _detectors[i].Name,
                     XValueType = ChartValueType.DateTime,
                     ChartArea = UpperChartArea,
-                    Color = Color.Red
+                    ChartType = SeriesChartType.Point,
+                    MarkerStyle = (MarkerStyle)(i%9+1),
+                    MarkerSize = 10,
+                    MarkerBorderWidth = 1,
+                    MarkerBorderColor = Color.Red,
+                    Color = Color.Transparent
+                });
+                chart1.Series.Add(new Series
+                {
+                    Name = LowerChartArea + _detectors[i].Name,
+                    XValueType = ChartValueType.DateTime,
+                    ChartArea = LowerChartArea,
+                    ChartType = SeriesChartType.Point,
+                    MarkerStyle = (MarkerStyle)(i % 9 + 1),
+                    MarkerSize = 20,
+                    MarkerBorderWidth = 1,
+                    MarkerBorderColor = Color.Red,
+                    Color = Color.Transparent
                 });
             }
 
@@ -162,11 +181,16 @@ namespace ZetaOne
             // 明示的にデータの読み込みの終了を管理する必要がある。
             _dataLoadCompleted = false;
 
-            var path = Path.Combine(@"..\data", listBox1.SelectedItem.ToString());
+            var path = Path.Combine("..", "data", listBox1.SelectedItem.ToString());
             _fileName = listBox1.SelectedItem.ToString();
 
             chart1.Series[UpperChartArea].Points.Clear();
             chart1.Series[LowerChartArea].Points.Clear();
+            foreach (var detector in _detectors)
+            {
+                chart1.Series[UpperChartArea + detector.Name].Points.Clear();
+                chart1.Series[LowerChartArea + detector.Name].Points.Clear();
+            }
 
             using (var sr = new StreamReader(path))
             {
@@ -302,9 +326,13 @@ namespace ZetaOne
             var point = _dataReader.Next;
             foreach (var detector in _detectors)
             {
-                var score = detector.AnomalyScore(point) * chart1.ChartAreas[UpperChartArea].AxisY.Maximum / 2;
+                var score = detector.AnomalyScore(point);
                 detector.Record(point);
-                chart1.Invoke((Action)(() => chart1.Series[detector.Name].Points.AddXY(point.XValue, score)));
+                if (score > 0.8)
+                {
+                    chart1.Invoke((Action)(() => chart1.Series[UpperChartArea + detector.Name].Points.AddXY(point.XValue, point.YValues[0])));
+                    chart1.Invoke((Action)(() => chart1.Series[LowerChartArea + detector.Name].Points.AddXY(point.XValue, point.YValues[0])));
+                }
             }
 
             // trace
