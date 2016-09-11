@@ -77,10 +77,10 @@ namespace ZetaOne
                 _standardDeviation = 1;
             }
 
-            public double HandleRecord(DataPoint dp)
+            public double HandleRecord(DataPoint dataPoint)
             {
                 var anomaryScore = 0.0;
-                var inputValue = dp.YValues[0];
+                var inputValue = dataPoint.YValues[0];
                 if (_windowData.Count > 0)
                 {
                     anomaryScore = 1 - NormalProbability(inputValue, _mean, _standardDeviation);
