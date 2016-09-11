@@ -2,17 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms.DataVisualization.Charting;
+using static ZetaOne.MathExtensions;
 
 namespace ZetaOne
 {
-    public static partial class Extensions
+    public static class MathExtensions
     {
         public static double StandardDeviation(this IEnumerable<double> values)
         {
             var enumerable = values as double[] ?? values.ToArray();
             if (!enumerable.Any()) return 0;
-            double avg = enumerable.Average();
-            double sum = enumerable.Sum(x => Math.Pow(x - avg, 2));
+            var avg = enumerable.Average();
+            var sum = enumerable.Sum(x => Math.Pow(x - avg, 2));
             return Math.Sqrt(sum / (enumerable.Length - 1));
         }
 
@@ -30,8 +31,8 @@ namespace ZetaOne
             x = Math.Abs(x);
 
             // A&S formula 7.1.26
-            double t = 1.0 / (1.0 + p * x);
-            double y = 1.0 - ((((a5 * t + a4) * t + a3) * t + a2) * t + a1) * t * Math.Exp(-x * x);
+            var t = 1.0 / (1.0 + p * x);
+            var y = 1.0 - ((((a5 * t + a4) * t + a3) * t + a2) * t + a1) * t * Math.Exp(-x * x);
 
             return sign * y;
         }
@@ -39,6 +40,17 @@ namespace ZetaOne
         public static double Erfc(double x)
         {
             return 1 - Erf(x);
+        }
+
+        public static double NormalProbability(double x, double mean, double standardDeviation)
+        {
+            if (x < mean)
+            {
+                var xp = 2 * mean - x;
+                return 1.0 - NormalProbability(xp, mean, standardDeviation);
+            }
+            var z = (x - mean) / standardDeviation;
+            return 0.5 * Erfc(z / Math.Sqrt(2));
         }
     }
 
@@ -101,17 +113,6 @@ namespace ZetaOne
                 {
                     _standardDeviation = 0.000001;
                 }
-            }
-
-            private static double NormalProbability(double x, double mean, double standardDeviation)
-            {
-                if (x < mean)
-                {
-                    var xp = 2 * mean - x;
-                    return 1.0 - NormalProbability(xp, mean, standardDeviation);
-                }
-                var z = (x - mean) / standardDeviation;
-                return 0.5 * Extensions.Erfc(z / Math.Sqrt(2));
             }
         }
     }
