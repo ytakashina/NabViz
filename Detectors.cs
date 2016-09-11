@@ -10,11 +10,11 @@ namespace ZetaOne
     {
         public static double StandardDeviation(this IEnumerable<double> values)
         {
-            var enumerable = values as double[] ?? values.ToArray();
-            if (!enumerable.Any()) return 0;
-            var avg = enumerable.Average();
-            var sum = enumerable.Sum(x => Math.Pow(x - avg, 2));
-            return Math.Sqrt(sum / (enumerable.Length - 1));
+            var array = values as double[] ?? values.ToArray();
+            if (!array.Any()) return 0;
+            var avg = array.Average();
+            var sum = array.Sum(x => Math.Pow(x - avg, 2));
+            return Math.Sqrt(sum / array.Length);
         }
 
         public static double Erf(double x)
@@ -56,15 +56,16 @@ namespace ZetaOne
 
     class Detectors
     {
-        interface IDetector
+        public abstract class Detector
         {
-            double AnomalyScore(DataPoint dataPoint);
-            void Record(DataPoint dataPoint);
+            public abstract double AnomalyScore(DataPoint dataPoint);
+            public abstract void Record(DataPoint dataPoint);
+            public string Name => ToString().Split('+').Last();
         }
 
         // SlidingThrethold (WindowedGaussian)
         // 閾値法
-        class WindowedGaussianDetector : IDetector
+        public class WindowedGaussian : Detector
         {
             private readonly int _windowSize;
             private readonly int _stepSize;
@@ -73,10 +74,10 @@ namespace ZetaOne
             private double _mean;
             private double _standardDeviation;
 
-            private static IDetector _instance;
-            public static IDetector Instance => _instance ?? (_instance = new WindowedGaussianDetector());
+            private static WindowedGaussian _instance;
+            public static WindowedGaussian Instance => _instance ?? (_instance = new WindowedGaussian());
 
-            private WindowedGaussianDetector()
+            private WindowedGaussian()
             {
                 _windowSize = 6400;
                 _windowData = new List<double>();
@@ -87,14 +88,14 @@ namespace ZetaOne
                 _instance = this;
             }
 
-            public double AnomalyScore(DataPoint dataPoint)
+            public override double AnomalyScore(DataPoint dataPoint)
             {
                 var input = dataPoint.YValues[0];
                 if (_windowData.Count == 0) return 0;
                 return 1 - NormalProbability(input, _mean, _standardDeviation);
             }
 
-            public void Record(DataPoint dataPoint)
+            public override void Record(DataPoint dataPoint)
             {
                 var input = dataPoint.YValues[0];
                 if (_windowData.Count < _windowSize)
