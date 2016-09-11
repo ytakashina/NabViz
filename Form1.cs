@@ -138,6 +138,9 @@ namespace ZetaOne
 
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
+            // 実行を止める。
+            checkBox2.Checked = false;
+
             // イベント駆動は実行時の順序保証がないので、
             // 明示的にデータの読み込みの終了を管理する必要がある。
             _dataLoadCompleted = false;
