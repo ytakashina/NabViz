@@ -222,6 +222,7 @@ namespace ZetaOne
             AdjustSelection();
 
             textBox1.Clear();
+            foreach (var detector in _detectors) detector.Initialize();
         }
 
         private void Form1_SizeChanged(object sender, EventArgs e)
@@ -328,7 +329,7 @@ namespace ZetaOne
             {
                 var score = detector.AnomalyScore(point);
                 detector.Record(point);
-                if (score > 0.8)
+                if (score > 0.9999)
                 {
                     chart1.Invoke((Action)(() => chart1.Series[UpperChartArea + detector.Name].Points.AddXY(point.XValue, point.YValues[0])));
                     chart1.Invoke((Action)(() => chart1.Series[LowerChartArea + detector.Name].Points.AddXY(point.XValue, point.YValues[0])));

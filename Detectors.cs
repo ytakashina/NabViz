@@ -10,6 +10,7 @@ namespace ZetaOne
     {
         public abstract class Detector
         {
+            public abstract void Initialize();
             public abstract double AnomalyScore(DataPoint dataPoint);
             public abstract void Record(DataPoint dataPoint);
             public string Name => ToString().Split('+').Last();
@@ -32,12 +33,20 @@ namespace ZetaOne
             private WindowedGaussian()
             {
                 _windowSize = 6400;
+                _stepSize = 100;
                 _windowData = new List<double>();
                 _stepBuffer = new List<double>();
-                _stepSize = 100;
                 _mean = 0;
                 _standardDeviation = 1;
                 _instance = this;
+            }
+
+            public override void Initialize()
+            {
+                _windowData.Clear();
+                _stepBuffer.Clear();
+                _mean = 0;
+                _standardDeviation = 1;
             }
 
             public override double AnomalyScore(DataPoint dataPoint)
