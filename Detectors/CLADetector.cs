@@ -7,7 +7,7 @@ using System.Windows.Forms.DataVisualization.Charting;
 
 namespace ZetaOne.Detectors
 {
-    class CLADetector : Detector
+    class ClaDetector : Detector
     {
         private int _columns;
         private readonly int _desiredLocalActivity;
