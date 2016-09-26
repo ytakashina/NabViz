@@ -8,8 +8,10 @@ namespace ZetaOne.Detectors
 {
     // SlidingThrethold (WindowedGaussian)
     // 閾値法
-    public class WindowedGaussian : Detector
+    class WindowedGaussian : Detector
     {
+        // List じゃなくて配列と begin/end を使って最適化してもよいかもしれないけど
+        // 別にそこまでやる必要あるか微妙。
         private readonly List<double> _windowData;
         private readonly int _windowSize;
         private double _mean;

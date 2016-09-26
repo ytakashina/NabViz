@@ -3,7 +3,7 @@ using System.Windows.Forms.DataVisualization.Charting;
 
 namespace ZetaOne.Detectors
 {
-    public abstract class Detector
+    abstract class Detector
     {
         public abstract void Initialize();
         public abstract double AnomalyScore(DataPoint dataPoint);
