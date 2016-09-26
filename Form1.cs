@@ -71,7 +71,7 @@ namespace ZetaOne
                 Color = Color.CornflowerBlue
             });
 
-            _detectors = new Detector[] { new WindowedGaussianDetector() };
+            _detectors = new Detector[] { new WindowedGaussian() };
             for (var i = 0; i < _detectors.Length; i++)
             {
                 chart1.Series.Add(new Series
