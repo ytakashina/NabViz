@@ -8,14 +8,14 @@ namespace ZetaOne.Detectors
 {
     // SlidingThrethold (WindowedGaussian)
     // 閾値法
-    public class WindowedGaussianDetector : Detector
+    public class WindowedGaussian : Detector
     {
         private readonly List<double> _windowData;
         private readonly int _windowSize;
         private double _mean;
         private double _standardDeviation;
 
-        public WindowedGaussianDetector()
+        public WindowedGaussian()
         {
             _windowSize = 6400;
             _windowData = new List<double>();
