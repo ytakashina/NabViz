@@ -52,6 +52,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Detectors\CorticalLearningAlgorithm.cs" />
     <Compile Include="Detectors\Detector.cs" />
     <Compile Include="AnomalyLabels.cs" />
     <Compile Include="DataReader.cs" />
