@@ -28,7 +28,10 @@ namespace ZetaOne.Detectors
 
         public override void Record(DataPoint dataPoint)
         {
-            
+            var date = DateTime.FromOADate(dataPoint.XValue);
+            var value = dataPoint.YValues[0];
+
+
         }
     }
 }
