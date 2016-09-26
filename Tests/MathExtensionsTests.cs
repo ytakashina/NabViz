@@ -58,7 +58,7 @@ namespace ZetaOne.Tests
         [TestMethod()]
         public void ErfcTest()
         {
-            // Erfc と同様。
+            // Erf と同様。
         }
 
         [TestMethod()]
