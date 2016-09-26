@@ -7,8 +7,15 @@ using System.Windows.Forms.DataVisualization.Charting;
 
 namespace ZetaOne.Detectors
 {
-    class CorticalLearningAlgorithm : Detector
+    class CLADetector : Detector
     {
+        private int _columns;
+        private readonly int _desiredLocalActivity;
+        private readonly double _inhibitionRadius;
+        private readonly int _minOverlap;
+        private readonly double _permanenceInc;
+        private readonly double _permanenceDec;
+
         public override void Initialize()
         {
             
