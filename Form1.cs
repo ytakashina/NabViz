@@ -6,7 +6,7 @@ using System.Linq;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 using RichForms;
-using static ZetaOne.Detectors;
+using ZetaOne.Detectors;
 
 namespace ZetaOne
 {
@@ -71,7 +71,7 @@ namespace ZetaOne
                 Color = Color.CornflowerBlue
             });
 
-            _detectors = new Detector[] { WindowedGaussian.Instance };
+            _detectors = new Detector[] { new WindowedGaussianDetector() };
             for (var i = 0; i < _detectors.Length; i++)
             {
                 chart1.Series.Add(new Series
