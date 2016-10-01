@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ZetaOne.Encoders
+namespace NabViz.Encoders
 {
     class ScalarEncoder : Encoder
     {
@@ -18,8 +18,6 @@ namespace ZetaOne.Encoders
         private int _n;
         private double _radius;
         private double _resolution;
-
-
 
         public ScalarEncoder(int w, double minInput, double maxInput, int n=0,
                              bool periodic = false, bool clipInput=false)

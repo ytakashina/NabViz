@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZetaOne", "ZetaOne.csproj", "{0B19557F-EA58-4486-A98E-396E5F1C7965}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NabViz", "NabViz.csproj", "{0B19557F-EA58-4486-A98E-396E5F1C7965}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{D0037549-B047-4EB2-B775-B71952471C06}"
 EndProject

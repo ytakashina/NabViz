@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Windows.Forms.DataVisualization.Charting;
 
-namespace ZetaOne.Detectors
+namespace NabViz.Detectors
 {
     abstract class Detector
     {

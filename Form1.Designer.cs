@@ -1,4 +1,4 @@
-﻿namespace ZetaOne
+﻿namespace NabViz
 {
     partial class Form1
     {
@@ -335,7 +335,7 @@
             this.ClientSize = new System.Drawing.Size(960, 540);
             this.Controls.Add(this.splitContainer1);
             this.Name = "Form1";
-            this.Text = "Zeta 1 Algorithm";
+            this.Text = "NabViz - NAB Visualizer";
             this.SizeChanged += new System.EventHandler(this.Form1_SizeChanged);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);

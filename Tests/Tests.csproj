@@ -55,9 +55,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ZetaOne.csproj">
+    <ProjectReference Include="..\NabViz.csproj">
       <Project>{0B19557F-EA58-4486-A98E-396E5F1C7965}</Project>
-      <Name>ZetaOne</Name>
+      <Name>NabViz</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>

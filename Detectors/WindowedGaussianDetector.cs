@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms.DataVisualization.Charting;
-using static ZetaOne.MathExtensions;
+using static NabViz.MathExtensions;
 
-namespace ZetaOne.Detectors
+namespace NabViz.Detectors
 {
     // SlidingThrethold (WindowedGaussian)
     // 閾値法

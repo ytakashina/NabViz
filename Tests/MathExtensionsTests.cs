@@ -1,12 +1,12 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ZetaOne;
+using NabViz;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ZetaOne.Tests
+namespace NabViz.Tests
 {
     [TestClass()]
     public class MathExtensionsTests
