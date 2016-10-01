@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace ZetaOne
+namespace NabViz
 {
     class AnomalyLabels
     {

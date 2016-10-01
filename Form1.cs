@@ -5,10 +5,10 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
+using NabViz.Detectors;
 using RichForms;
-using ZetaOne.Detectors;
 
-namespace ZetaOne
+namespace NabViz
 {
     public partial class Form1 : Form
     {

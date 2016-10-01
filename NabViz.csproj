@@ -7,8 +7,8 @@
     <ProjectGuid>{0B19557F-EA58-4486-A98E-396E5F1C7965}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ZetaOne</RootNamespace>
-    <AssemblyName>ZetaOne</AssemblyName>
+    <RootNamespace>NabViz</RootNamespace>
+    <AssemblyName>NabViz</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

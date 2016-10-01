@@ -1,6 +1,6 @@
 ﻿using System.Windows.Forms.DataVisualization.Charting;
 
-namespace ZetaOne
+namespace NabViz
 {
     class DataReader
     {
