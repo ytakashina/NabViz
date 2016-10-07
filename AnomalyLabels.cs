@@ -30,7 +30,7 @@ namespace NabViz
                     var date2 = DateTime.ParseExact(obj[1], format, null);
                     list.Add(Tuple.Create(date1, date2));
                 }
-                _windows.Add(file.Key.Split('/').Last(), list);
+                _windows.Add(Path.Combine(file.Key.Split('/')), list);
             }
             _instance = this;
         }

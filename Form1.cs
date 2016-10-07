@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
-using NabViz.Detectors;
 using RichForms;
 
 namespace NabViz
@@ -14,7 +13,7 @@ namespace NabViz
     {
         private const string UpperChartArea = "Global";
         private const string LowerChartArea = "Local";
-        private readonly Detector[] _detectors;
+        private readonly string[] _detectors;
         private string _fileName;
         private Graphics _graphics;
         private readonly Brush _windowBrush;
@@ -28,9 +27,12 @@ namespace NabViz
         {
             InitializeComponent();
 
-            var dir = new DirectoryInfo(@"..\data");
-            var files = dir.GetFiles("*.csv").Select(str => str.ToString());
-            foreach (var f in files) listBox1.Items.Add(f);
+            var rootDir = new DirectoryInfo(@"..\data");
+            foreach (var dir in rootDir.GetDirectories())
+            {
+                var files = dir.GetFiles("*.csv").Select(file => Path.Combine(dir.ToString(), file.ToString()));
+                foreach (var f in files) listBox1.Items.Add(f);
+            }
 
             var bmp = new Bitmap(pictureBox1.Width, pictureBox1.Height, PixelFormat.Format32bppArgb);
             bmp.MakeTransparent(Color.White);
@@ -71,12 +73,12 @@ namespace NabViz
                 Color = Color.CornflowerBlue
             });
 
-            _detectors = new Detector[] { new WindowedGaussianDetector() };
+            _detectors = new[] { "WindowedGaussianDetector" };
             for (var i = 0; i < _detectors.Length; i++)
             {
                 chart1.Series.Add(new Series
                 {
-                    Name = UpperChartArea + _detectors[i].Name,
+                    Name = UpperChartArea + _detectors[i],
                     XValueType = ChartValueType.DateTime,
                     ChartArea = UpperChartArea,
                     ChartType = SeriesChartType.Point,
@@ -88,7 +90,7 @@ namespace NabViz
                 });
                 chart1.Series.Add(new Series
                 {
-                    Name = LowerChartArea + _detectors[i].Name,
+                    Name = LowerChartArea + _detectors[i],
                     XValueType = ChartValueType.DateTime,
                     ChartArea = LowerChartArea,
                     ChartType = SeriesChartType.Point,
@@ -188,8 +190,8 @@ namespace NabViz
             chart1.Series[LowerChartArea].Points.Clear();
             foreach (var detector in _detectors)
             {
-                chart1.Series[UpperChartArea + detector.Name].Points.Clear();
-                chart1.Series[LowerChartArea + detector.Name].Points.Clear();
+                chart1.Series[UpperChartArea + detector].Points.Clear();
+                chart1.Series[LowerChartArea + detector].Points.Clear();
             }
 
             using (var sr = new StreamReader(path))
@@ -222,7 +224,7 @@ namespace NabViz
             AdjustSelection();
 
             textBox1.Clear();
-            foreach (var detector in _detectors) detector.Initialize();
+            //foreach (var detector in _detectors) detector.Initialize();
         }
 
         private void Form1_SizeChanged(object sender, EventArgs e)
@@ -327,13 +329,15 @@ namespace NabViz
             var point = _dataReader.Next;
             foreach (var detector in _detectors)
             {
-                var score = detector.AnomalyScore(point);
-                detector.Record(point);
-                if (score > 0.9999)
-                {
-                    chart1.Invoke((Action)(() => chart1.Series[UpperChartArea + detector.Name].Points.AddXY(point.XValue, point.YValues[0])));
-                    chart1.Invoke((Action)(() => chart1.Series[LowerChartArea + detector.Name].Points.AddXY(point.XValue, point.YValues[0])));
-                }
+                //var score = detector.AnomalyScore(point);
+                //detector.Record(point);
+                //if (score > 0.9999)
+                //{
+                //    chart1.Invoke((Action)(() => chart1.Series[UpperChartArea + detector].Points.AddXY(point.XValue, point.YValues[0])));
+                //    chart1.Invoke((Action)(() => chart1.Series[LowerChartArea + detector].Points.AddXY(point.XValue, point.YValues[0])));
+                //    var str = "[" + DateTime.FromOADate(point.XValue) + ", " + point.YValues[0] + "]";
+                //    textBox1.Invoke((Action)(() => { textBox1.WriteLineBefore(str); }));
+                //}
             }
 
             // trace
@@ -344,13 +348,6 @@ namespace NabViz
                 if (x > _selection.X) _selection.X = x;
                 var maxX = axisX.ValueToPixelPosition(axisX.Maximum);
                 if (_selection.Right > maxX) _selection.X = maxX - _selection.Width;
-            }
-
-            // log
-            if (checkBox3.Checked)
-            {
-                var str = "[" + DateTime.FromOADate(point.XValue) + ", " + point.YValues[0] + "]";
-                textBox1.Invoke((Action)(() => { textBox1.WriteLineBefore(str); }));
             }
 
         }
