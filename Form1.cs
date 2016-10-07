@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -13,7 +14,7 @@ namespace NabViz
     {
         private const string UpperChartArea = "Global";
         private const string LowerChartArea = "Local";
-        private readonly string[] _detectors;
+        private readonly List<string> _detectors;
         private string _fileName;
         private Graphics _graphics;
         private readonly Brush _windowBrush;
@@ -73,14 +74,18 @@ namespace NabViz
                 Color = Color.CornflowerBlue
             });
 
-            _detectors = new[] { "WindowedGaussian", "TestDetector", "TestDetector2" };
+            _detectors = new List<string>();
+            foreach (var elm in AnomalyResults.Dictionary)
+            {
+                _detectors.Add(elm.Key);
+            }
             foreach (var detector in _detectors)
             {
                 tableLayoutPanel1.Controls.Add(new CheckBox());
                 tableLayoutPanel1.Controls.Add(new Label { Text = detector });
                 tableLayoutPanel1.Controls.Add(ComboBoxFactory.Instance.GetComboBox());
             }
-            for (var i = 0; i < _detectors.Length; i++)
+            for (var i = 0; i < _detectors.Count; i++)
             {
                 chart1.Series.Add(new Series
                 {
@@ -107,8 +112,6 @@ namespace NabViz
                     Color = Color.Transparent
                 });
             }
-
-            var results = AnomalyResults.Instance;
 
             _selection.Width = 100;
         }
@@ -214,6 +217,24 @@ namespace NabViz
                     chart1.Series[LowerChartArea].Points.AddXY(dt, value);
                 }
             }
+
+
+            foreach (var detector in AnomalyResults.Dictionary)
+            {
+                foreach (var score in detector.Value[detector.Key + "_" + _fileName.Split('\\').Last()])
+                {
+                    if (score.Item2 > 0.9999)
+                    {
+                        chart1.Invoke((Action)(() => chart1.Series[UpperChartArea + detector.Key].Points.AddXY(score.Item1, score.Item2)));
+                        chart1.Invoke((Action)(() => chart1.Series[LowerChartArea + detector.Key].Points.AddXY(score.Item1, score.Item2)));
+                    }
+                }
+            }
+
+
+
+
+
             _dataReader = new DataReader(chart1.Series[UpperChartArea]);
             _dataLoadCompleted = true;
 
@@ -230,8 +251,6 @@ namespace NabViz
             // 選択範囲を現在の ChartArea[0] に合わせる。
             InitializeSelection();
             AdjustSelection();
-
-            //foreach (var detector in _detectors) detector.Initialize();
         }
 
         private void Form1_SizeChanged(object sender, EventArgs e)
@@ -282,18 +301,12 @@ namespace NabViz
             checkBox1.Checked = !checkBox1.Checked;
         }
 
-        /// <summary>
-        /// next button
-        /// </summary>
         private void button1_Click(object sender, EventArgs e)
         {
             if (_dataReader == null || _dataReader.EndOfStream) return;
             var point = _dataReader.Next;
         }
 
-        /// <summary>
-        /// prev button
-        /// </summary>
         private void button2_Click(object sender, EventArgs e)
         {
             if (_dataReader == null || _dataReader.StartOfStream) return;
@@ -331,18 +344,17 @@ namespace NabViz
             }
 
             var point = _dataReader.Next;
-            foreach (var detector in _detectors)
-            {
-                //var score = detector.AnomalyScore(point);
-                //detector.Record(point);
-                //if (score > 0.9999)
-                //{
-                //    chart1.Invoke((Action)(() => chart1.Series[UpperChartArea + detector].Points.AddXY(point.XValue, point.YValues[0])));
-                //    chart1.Invoke((Action)(() => chart1.Series[LowerChartArea + detector].Points.AddXY(point.XValue, point.YValues[0])));
-                //    var str = "[" + DateTime.FromOADate(point.XValue) + ", " + point.YValues[0] + "]";
-                //    textBox1.Invoke((Action)(() => { textBox1.WriteLineBefore(str); }));
-                //}
-            }
+            //int i = 0;
+            //foreach (var detector in _detectors)
+            //{
+            //    var score = AnomalyResults.Dictionary[detector][listBox1.SelectedItem.ToString().Split('\\').Last()][i++].Item2;
+            //    if (score > 0.9999)
+            //    {
+            //        chart1.Invoke((Action)(() => chart1.Series[UpperChartArea + detector].Points.AddXY(point.XValue, point.YValues[0])));
+            //        chart1.Invoke((Action)(() => chart1.Series[LowerChartArea + detector].Points.AddXY(point.XValue, point.YValues[0])));
+            //        var str = "[" + DateTime.FromOADate(point.XValue) + ", " + point.YValues[0] + "]";
+            //    }
+            //}
 
             // trace
             if (checkBox1.Checked)

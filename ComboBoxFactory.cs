@@ -17,7 +17,7 @@ namespace NabViz
             {
                 box.Items.Add((MarkerStyle)(i%9 + 1));
             }
-            box.SelectedIndex = _index++;
+            box.SelectedIndex = _index++ % 9;
             return box;
         }
 
