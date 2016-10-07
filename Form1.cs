@@ -231,10 +231,6 @@ namespace NabViz
                 }
             }
 
-
-
-
-
             _dataReader = new DataReader(chart1.Series[UpperChartArea]);
             _dataLoadCompleted = true;
 
@@ -299,18 +295,6 @@ namespace NabViz
         private void pictureBox1_Click(object sender, EventArgs e)
         {
             checkBox1.Checked = !checkBox1.Checked;
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            if (_dataReader == null || _dataReader.EndOfStream) return;
-            var point = _dataReader.Next;
-        }
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-            if (_dataReader == null || _dataReader.StartOfStream) return;
-            var point = _dataReader.Prev;
         }
 
         private void timer1_Tick(object sender, EventArgs e)
@@ -378,14 +362,10 @@ namespace NabViz
                     return;
                 }
                 timer2.Start();
-                button1.Enabled = false;
-                button2.Enabled = false;
             }
             else
             {
                 timer2.Stop();
-                button1.Enabled = true;
-                button2.Enabled = true;
             }
         }
 
