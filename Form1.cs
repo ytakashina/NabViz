@@ -73,7 +73,13 @@ namespace NabViz
                 Color = Color.CornflowerBlue
             });
 
-            _detectors = new[] { "WindowedGaussianDetector" };
+            _detectors = new[] { "WindowedGaussian", "TestDetector", "TestDetector2" };
+            foreach (var detector in _detectors)
+            {
+                tableLayoutPanel1.Controls.Add(new CheckBox());
+                tableLayoutPanel1.Controls.Add(new Label { Text = detector });
+                tableLayoutPanel1.Controls.Add(ComboBoxFactory.Instance.GetComboBox());
+            }
             for (var i = 0; i < _detectors.Length; i++)
             {
                 chart1.Series.Add(new Series
@@ -101,6 +107,8 @@ namespace NabViz
                     Color = Color.Transparent
                 });
             }
+
+            var results = AnomalyResults.Instance;
 
             _selection.Width = 100;
         }
@@ -223,7 +231,6 @@ namespace NabViz
             InitializeSelection();
             AdjustSelection();
 
-            textBox1.Clear();
             //foreach (var detector in _detectors) detector.Initialize();
         }
 
@@ -282,7 +289,6 @@ namespace NabViz
         {
             if (_dataReader == null || _dataReader.EndOfStream) return;
             var point = _dataReader.Next;
-            textBox1.WriteLineBefore("[" + DateTime.FromOADate(point.XValue) + ", " + point.YValues[0] + "]");
         }
 
         /// <summary>
@@ -292,7 +298,6 @@ namespace NabViz
         {
             if (_dataReader == null || _dataReader.StartOfStream) return;
             var point = _dataReader.Prev;
-            textBox1.WriteLineBefore("[" + DateTime.FromOADate(point.XValue) + ", " + point.YValues[0] + "]");
         }
 
         private void timer1_Tick(object sender, EventArgs e)
@@ -321,7 +326,6 @@ namespace NabViz
             if (_dataReader == null) return;
             if (_dataReader.EndOfStream)
             {
-                textBox1.Invoke((Action)(() => { textBox1.WriteLineBefore("[I] Reached EOS."); }));
                 checkBox2.Invoke((Action)(() => { checkBox2.Checked = false; }));
                 return;
             }
@@ -352,18 +356,12 @@ namespace NabViz
 
         }
 
-        private void checkBox1_CheckedChanged(object sender, EventArgs e)
-        {
-            textBox1.WriteLineBefore("[I] Trace: " + (checkBox1.Checked ? "ON" : "OFF"));
-        }
-
         private void checkBox2_CheckedChanged(object sender, EventArgs e)
         {
             if (checkBox2.Checked)
             {
                 if (!_dataLoadCompleted)
                 {
-                    textBox1.WriteLineBefore("[E] Data is not defined.");
                     checkBox2.Checked = false;
                     return;
                 }
@@ -377,12 +375,6 @@ namespace NabViz
                 button1.Enabled = true;
                 button2.Enabled = true;
             }
-        }
-
-        private void checkBox3_CheckedChanged(object sender, EventArgs e)
-        {
-            textBox1.WriteLineBefore("[I] Logging: " + (checkBox3.Checked ? "ON" : "OFF"));
-            if (checkBox3.Checked) textBox1.WriteLineBefore("[W] The Application will crash when logging under high speed, especially over x4.");
         }
 
         private void radioButton1_CheckedChanged(object sender, EventArgs e)
