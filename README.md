@@ -16,7 +16,7 @@ This application assumes the following directory structure.
 └─results
 ```
 
-Since NabViz is a tool only for visualization, you must download the raw data, anomaly labels, and calculated results from [the official NAB page](https://github.com/numenta/NAB), and put them in the same manner as the original NAB repository.
+Since NabViz is a tool only for visualization, you must download the raw data, the anomaly labels, and the calculated results from [the official NAB page](https://github.com/numenta/NAB), and put them in the same manner as the original NAB repository.
 
 Don't forget to put your binary in the `bin` directory.
 
