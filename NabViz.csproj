@@ -53,6 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnomalyLabels.cs" />
+    <Compile Include="AnomalyResults.cs" />
     <Compile Include="DataReader.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
