@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
-using NabViz.Detectors;
 using RichForms;
 
 namespace NabViz
@@ -14,7 +13,7 @@ namespace NabViz
     {
         private const string UpperChartArea = "Global";
         private const string LowerChartArea = "Local";
-        private readonly Detector[] _detectors;
+        private readonly string[] _detectors;
         private string _fileName;
         private Graphics _graphics;
         private readonly Brush _windowBrush;
@@ -28,9 +27,12 @@ namespace NabViz
         {
             InitializeComponent();
 
-            var dir = new DirectoryInfo(@"..\data");
-            var files = dir.GetFiles("*.csv").Select(str => str.ToString());
-            foreach (var f in files) listBox1.Items.Add(f);
+            var rootDir = new DirectoryInfo(@"..\data");
+            foreach (var dir in rootDir.GetDirectories())
+            {
+                var files = dir.GetFiles("*.csv").Select(file => Path.Combine(dir.ToString(), file.ToString()));
+                foreach (var f in files) listBox1.Items.Add(f);
+            }
 
             var bmp = new Bitmap(pictureBox1.Width, pictureBox1.Height, PixelFormat.Format32bppArgb);
             bmp.MakeTransparent(Color.White);
@@ -71,12 +73,18 @@ namespace NabViz
                 Color = Color.CornflowerBlue
             });
 
-            _detectors = new Detector[] { new WindowedGaussianDetector() };
+            _detectors = new[] { "WindowedGaussian", "TestDetector", "TestDetector2" };
+            foreach (var detector in _detectors)
+            {
+                tableLayoutPanel1.Controls.Add(new CheckBox());
+                tableLayoutPanel1.Controls.Add(new Label { Text = detector });
+                tableLayoutPanel1.Controls.Add(ComboBoxFactory.Instance.GetComboBox());
+            }
             for (var i = 0; i < _detectors.Length; i++)
             {
                 chart1.Series.Add(new Series
                 {
-                    Name = UpperChartArea + _detectors[i].Name,
+                    Name = UpperChartArea + _detectors[i],
                     XValueType = ChartValueType.DateTime,
                     ChartArea = UpperChartArea,
                     ChartType = SeriesChartType.Point,
@@ -88,7 +96,7 @@ namespace NabViz
                 });
                 chart1.Series.Add(new Series
                 {
-                    Name = LowerChartArea + _detectors[i].Name,
+                    Name = LowerChartArea + _detectors[i],
                     XValueType = ChartValueType.DateTime,
                     ChartArea = LowerChartArea,
                     ChartType = SeriesChartType.Point,
@@ -99,6 +107,8 @@ namespace NabViz
                     Color = Color.Transparent
                 });
             }
+
+            var results = AnomalyResults.Instance;
 
             _selection.Width = 100;
         }
@@ -188,8 +198,8 @@ namespace NabViz
             chart1.Series[LowerChartArea].Points.Clear();
             foreach (var detector in _detectors)
             {
-                chart1.Series[UpperChartArea + detector.Name].Points.Clear();
-                chart1.Series[LowerChartArea + detector.Name].Points.Clear();
+                chart1.Series[UpperChartArea + detector].Points.Clear();
+                chart1.Series[LowerChartArea + detector].Points.Clear();
             }
 
             using (var sr = new StreamReader(path))
@@ -221,8 +231,7 @@ namespace NabViz
             InitializeSelection();
             AdjustSelection();
 
-            textBox1.Clear();
-            foreach (var detector in _detectors) detector.Initialize();
+            //foreach (var detector in _detectors) detector.Initialize();
         }
 
         private void Form1_SizeChanged(object sender, EventArgs e)
@@ -280,7 +289,6 @@ namespace NabViz
         {
             if (_dataReader == null || _dataReader.EndOfStream) return;
             var point = _dataReader.Next;
-            textBox1.WriteLineBefore("[" + DateTime.FromOADate(point.XValue) + ", " + point.YValues[0] + "]");
         }
 
         /// <summary>
@@ -290,7 +298,6 @@ namespace NabViz
         {
             if (_dataReader == null || _dataReader.StartOfStream) return;
             var point = _dataReader.Prev;
-            textBox1.WriteLineBefore("[" + DateTime.FromOADate(point.XValue) + ", " + point.YValues[0] + "]");
         }
 
         private void timer1_Tick(object sender, EventArgs e)
@@ -319,7 +326,6 @@ namespace NabViz
             if (_dataReader == null) return;
             if (_dataReader.EndOfStream)
             {
-                textBox1.Invoke((Action)(() => { textBox1.WriteLineBefore("[I] Reached EOS."); }));
                 checkBox2.Invoke((Action)(() => { checkBox2.Checked = false; }));
                 return;
             }
@@ -327,13 +333,15 @@ namespace NabViz
             var point = _dataReader.Next;
             foreach (var detector in _detectors)
             {
-                var score = detector.AnomalyScore(point);
-                detector.Record(point);
-                if (score > 0.9999)
-                {
-                    chart1.Invoke((Action)(() => chart1.Series[UpperChartArea + detector.Name].Points.AddXY(point.XValue, point.YValues[0])));
-                    chart1.Invoke((Action)(() => chart1.Series[LowerChartArea + detector.Name].Points.AddXY(point.XValue, point.YValues[0])));
-                }
+                //var score = detector.AnomalyScore(point);
+                //detector.Record(point);
+                //if (score > 0.9999)
+                //{
+                //    chart1.Invoke((Action)(() => chart1.Series[UpperChartArea + detector].Points.AddXY(point.XValue, point.YValues[0])));
+                //    chart1.Invoke((Action)(() => chart1.Series[LowerChartArea + detector].Points.AddXY(point.XValue, point.YValues[0])));
+                //    var str = "[" + DateTime.FromOADate(point.XValue) + ", " + point.YValues[0] + "]";
+                //    textBox1.Invoke((Action)(() => { textBox1.WriteLineBefore(str); }));
+                //}
             }
 
             // trace
@@ -346,18 +354,6 @@ namespace NabViz
                 if (_selection.Right > maxX) _selection.X = maxX - _selection.Width;
             }
 
-            // log
-            if (checkBox3.Checked)
-            {
-                var str = "[" + DateTime.FromOADate(point.XValue) + ", " + point.YValues[0] + "]";
-                textBox1.Invoke((Action)(() => { textBox1.WriteLineBefore(str); }));
-            }
-
-        }
-
-        private void checkBox1_CheckedChanged(object sender, EventArgs e)
-        {
-            textBox1.WriteLineBefore("[I] Trace: " + (checkBox1.Checked ? "ON" : "OFF"));
         }
 
         private void checkBox2_CheckedChanged(object sender, EventArgs e)
@@ -366,7 +362,6 @@ namespace NabViz
             {
                 if (!_dataLoadCompleted)
                 {
-                    textBox1.WriteLineBefore("[E] Data is not defined.");
                     checkBox2.Checked = false;
                     return;
                 }
@@ -380,12 +375,6 @@ namespace NabViz
                 button1.Enabled = true;
                 button2.Enabled = true;
             }
-        }
-
-        private void checkBox3_CheckedChanged(object sender, EventArgs e)
-        {
-            textBox1.WriteLineBefore("[I] Logging: " + (checkBox3.Checked ? "ON" : "OFF"));
-            if (checkBox3.Checked) textBox1.WriteLineBefore("[W] The Application will crash when logging under high speed, especially over x4.");
         }
 
         private void radioButton1_CheckedChanged(object sender, EventArgs e)
