@@ -29,12 +29,12 @@ namespace NabViz
                             // 2015-09-11 15:34:00 ,64.0  ,0.5          ,1     ,-1.0                    ,-2.0                    ,-1.0
                             var head = sr.ReadLine().Split(',').ToList();
                             var dateColumnIndex = head.IndexOf("timestamp");
-                            var targetColumnIndex = head.IndexOf("anomaly_score");
+                            var scoreColumnIndex = head.IndexOf("anomaly_score");
                             while (!sr.EndOfStream)
                             {
                                 var line = sr.ReadLine().Split(',');
                                 var date = DateTime.ParseExact(line[dateColumnIndex], "yyyy-MM-dd HH:mm:ss", null);
-                                var value = double.Parse(line[targetColumnIndex]);
+                                var value = double.Parse(line[scoreColumnIndex]);
                                 _results[detectorDir.ToString()][file].Add(Tuple.Create(date, value));
                             }
                         }

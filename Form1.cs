@@ -28,10 +28,10 @@ namespace NabViz
         {
             InitializeComponent();
 
-            var rootDir = new DirectoryInfo(@"..\data");
+            var rootDir = new DirectoryInfo(Path.Combine("..", "data"));
             foreach (var dir in rootDir.GetDirectories())
             {
-                var files = dir.GetFiles("*.csv").Select(file => Path.Combine(dir.ToString(), file.ToString()));
+                var files = dir.GetFiles("*.csv").Select(file => dir.ToString() + "/" +  file.ToString());
                 foreach (var f in files) listBox1.Items.Add(f);
             }
 
@@ -75,10 +75,10 @@ namespace NabViz
             });
 
             _detectors = new List<string>();
-            foreach (var elm in AnomalyResults.Dictionary)
-            {
-                _detectors.Add(elm.Key);
-            }
+//            foreach (var elm in AnomalyResults.Dictionary)
+//            {
+//                _detectors.Add(elm.Key);
+//            }
             foreach (var detector in _detectors)
             {
                 tableLayoutPanel1.Controls.Add(new CheckBox());
@@ -219,17 +219,17 @@ namespace NabViz
             }
 
 
-            foreach (var detector in AnomalyResults.Dictionary)
-            {
-                foreach (var score in detector.Value[detector.Key + "_" + _fileName.Split('\\').Last()])
-                {
-                    if (score.Item2 > 0.9999)
-                    {
-                        chart1.Invoke((Action)(() => chart1.Series[UpperChartArea + detector.Key].Points.AddXY(score.Item1, score.Item2)));
-                        chart1.Invoke((Action)(() => chart1.Series[LowerChartArea + detector.Key].Points.AddXY(score.Item1, score.Item2)));
-                    }
-                }
-            }
+//            foreach (var detector in AnomalyResults.Dictionary)
+//            {
+//                foreach (var score in detector.Value[detector.Key + "_" + _fileName.Split('\\').Last()])
+//                {
+//                    if (score.Item2 > 0.9999)
+//                    {
+//                        chart1.Invoke((Action)(() => chart1.Series[UpperChartArea + detector.Key].Points.AddXY(score.Item1, score.Item2)));
+//                        chart1.Invoke((Action)(() => chart1.Series[LowerChartArea + detector.Key].Points.AddXY(score.Item1, score.Item2)));
+//                    }
+//                }
+//            }
 
             _dataReader = new DataReader(chart1.Series[UpperChartArea]);
             _dataLoadCompleted = true;
