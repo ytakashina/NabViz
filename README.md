@@ -4,9 +4,10 @@ A visualization tool for Numenta Anomaly Benchmark (NAB).
 
 # Requirements
 - .NET
+- Json.NET
 
 
-# Usage
+# How to use
 This application assumes the following directory structure.
 
 ```
