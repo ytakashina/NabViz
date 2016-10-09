@@ -76,9 +76,6 @@ namespace NabViz
                 treeView1.Nodes.Add(node);
             }
 
-            foreach (var detectorName in DetectionResults.ResultsByDetector.Keys)
-            {
-            }
             for (var i = 0; i < DetectionResults.ResultsByDetector.Count; i++)
             {
                 var detectorNames = DetectionResults.ResultsByDetector.Keys;
@@ -118,9 +115,9 @@ namespace NabViz
         private void InitializeInnerPlotPosition(string name)
         {
             var inner = chart1.ChartAreas[name].InnerPlotPosition;
-            inner.Width = 94;
+            inner.Width = 92;
             inner.Height = 90;
-            inner.X = 6;
+            inner.X = 8;
             inner.Y = 0;
         }
 
