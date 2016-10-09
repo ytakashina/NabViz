@@ -8,7 +8,6 @@ namespace NabViz
 {
     class AnomalyLabels
     {
-        private static AnomalyLabels _instance = new AnomalyLabels();
         private readonly Dictionary<string, List<Tuple<DateTime, DateTime>>> _labels;
 
         private AnomalyLabels()
@@ -36,6 +35,7 @@ namespace NabViz
 
         public List<Tuple<DateTime, DateTime>> this[string key] => _labels[key];
 
+        private static AnomalyLabels _instance = new AnomalyLabels();
         public static AnomalyLabels Instance => _instance;
     }
 }

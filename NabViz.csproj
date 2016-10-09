@@ -55,6 +55,8 @@
     <Compile Include="src\AnomalyLabels.cs" />
     <Compile Include="src\DetectionResults.cs" />
     <Compile Include="src\DataReader.cs" />
+    <Compile Include="src\DetectionThresholds.cs" />
+    <Compile Include="src\Detectors.cs" />
     <Compile Include="src\Form1.cs">
       <SubType>Form</SubType>
     </Compile>
