@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
-using RichForms;
 
 namespace NabViz
 {
@@ -16,7 +15,7 @@ namespace NabViz
         private const string LowerChartArea = "Local";
         private Graphics _graphics;
         private readonly Brush _windowBrush;
-        private RectangleD _selection;
+        private RectangleF _selection;
         private bool _dataLoadCompleted;
         private DataReader _dataReader;
         private bool _selectionFixed;
@@ -24,8 +23,6 @@ namespace NabViz
         public Form1()
         {
             InitializeComponent();
-
-            treeView1.PathSeparator = Path.DirectorySeparatorChar.ToString();
 
             var bmp = new Bitmap(pictureBox1.Width, pictureBox1.Height, PixelFormat.Format32bppArgb);
             bmp.MakeTransparent(Color.White);
@@ -63,6 +60,8 @@ namespace NabViz
                 Color = Color.CornflowerBlue
             });
 
+            treeView1.PathSeparator = Path.DirectorySeparatorChar.ToString();
+
             var rootDir = new DirectoryInfo(Path.Combine("..", "data"));
             foreach (var dir in rootDir.GetDirectories())
             {
@@ -71,16 +70,15 @@ namespace NabViz
                 foreach (var f in files) node.Nodes.Add(f.ToString());
                 treeView1.Nodes.Add(node);
             }
-
-            for (var i = 0; i < DetectionResults.ResultsByDetector.Count; i++)
+            foreach (var detectorName in DetectionResults.ResultsByDetector.Keys)
             {
-                var detectorNames = DetectionResults.ResultsByDetector.Keys;
-                tableLayoutPanel1.Controls.Add(new Label {Text = detectorNames.ElementAt(i)});
-                tableLayoutPanel1.Controls.Add(CreateComboBox(detectorNames.ElementAt(i)));
+                tableLayoutPanel1.Controls.Add(new Label {Text = detectorName});
+                tableLayoutPanel1.Controls.Add(CreateDetectorComboBox(detectorName));
+                tableLayoutPanel1.Controls.Add(CreateThresholdTextBox(detectorName));
 
                 chart1.Series.Add(new Series
                 {
-                    Name = UpperChartArea + detectorNames.ElementAt(i),
+                    Name = UpperChartArea + detectorName,
                     XValueType = ChartValueType.DateTime,
                     ChartArea = UpperChartArea,
                     ChartType = SeriesChartType.Point,
@@ -92,7 +90,7 @@ namespace NabViz
                 });
                 chart1.Series.Add(new Series
                 {
-                    Name = LowerChartArea + detectorNames.ElementAt(i),
+                    Name = LowerChartArea + detectorName,
                     XValueType = ChartValueType.DateTime,
                     ChartArea = LowerChartArea,
                     ChartType = SeriesChartType.Point,
@@ -120,7 +118,7 @@ namespace NabViz
         private void InitializeSelection()
         {
             var axisX = chart1.ChartAreas[UpperChartArea].AxisX;
-            _selection.X = axisX.ValueToPixelPosition(axisX.Minimum);
+            _selection.X = (float) axisX.ValueToPixelPosition(axisX.Minimum);
         }
 
         /// <summary>
@@ -131,23 +129,23 @@ namespace NabViz
         {
             if (!_dataLoadCompleted) return;
             var axisY = chart1.ChartAreas[UpperChartArea].AxisY;
-            _selection.Y = axisY.ValueToPixelPosition(axisY.Maximum);
-            _selection.Height = axisY.ValueToPixelPosition(axisY.Minimum) - _selection.Y;
+            _selection.Y = (float) axisY.ValueToPixelPosition(axisY.Maximum);
+            _selection.Height = (float) axisY.ValueToPixelPosition(axisY.Minimum) - _selection.Y;
 
             var axisX = chart1.ChartAreas[UpperChartArea].AxisX;
             var minX = axisX.ValueToPixelPosition(axisX.Minimum);
             var maxX = axisX.ValueToPixelPosition(axisX.Maximum);
 
             if (_selection.Width < 1) _selection.Width = 1;
-            if (_selection.Width > maxX - minX) _selection.Width = maxX - minX;
+            if (_selection.Width > maxX - minX) _selection.Width = (float) (maxX - minX);
 
-            if (_selection.Right > maxX) _selection.X = maxX - _selection.Width;
-            if (_selection.X < minX) _selection.X = minX;
+            if (_selection.Right > maxX) _selection.X = (float) (maxX - _selection.Width);
+            if (_selection.X < minX) _selection.X = (float) minX;
         }
 
         private void DrawSelectedRange()
         {
-            _graphics.DrawRectangle(Pens.Red, (Rectangle) _selection);
+            _graphics.DrawRectangles(Pens.Red, new[] {_selection});
         }
 
         private void DrawAnomaryWindow(string name)
@@ -213,7 +211,7 @@ namespace NabViz
                 foreach (var detector in detectors)
                 {
                     var score = detector.Value[treeView1.SelectedNode.FullPath][DateTime.FromOADate(point.XValue)];
-                    if (score >= 1) dataPoints[detector.Key].Add(point);
+                    if (score >= DetectionThresholds.Instance[detector.Key]) dataPoints[detector.Key].Add(point);
                 }
             }
 
@@ -275,7 +273,7 @@ namespace NabViz
             if (!_dataLoadCompleted) return;
             if (_selectionFixed) return;
 
-            var delta = e.Delta*SystemInformation.MouseWheelScrollLines/60.0;
+            var delta = e.Delta*SystemInformation.MouseWheelScrollLines/60.0f;
             _selection.Width += delta;
             _selection.X -= delta/2;
             chart1.ChartAreas[LowerChartArea].AxisX.IntervalAutoMode = IntervalAutoMode.VariableCount;
@@ -311,20 +309,28 @@ namespace NabViz
             pictureBox1.Refresh();
         }
 
-        private ComboBox CreateComboBox(string detectorName)
+        private ComboBox CreateDetectorComboBox(string detectorName)
         {
             var box = new ComboBox();
-            for (int i = 0; i < 10; i++)
-            {
-                box.Items.Add((MarkerStyle) i);
-            }
+            box.Width = 70;
             box.Name = detectorName;
+            for (int i = 0; i < 10; i++) box.Items.Add((MarkerStyle)i);
             box.SelectedIndex = 0;
-            box.SelectedIndexChanged += comboBox_SelectedIndexChanged;
+            box.SelectedIndexChanged += detectorBox_SelectedIndexChanged;
             return box;
         }
 
-        private void comboBox_SelectedIndexChanged(object sender, EventArgs e)
+        private TextBox CreateThresholdTextBox(string detectorName)
+        {
+            var box = new TextBox();
+            box.Width = 60;
+            box.Name = detectorName;
+            box.Text = DetectionThresholds.Instance[detectorName].ToString();
+            box.TextChanged += thresholdBox_TextChanged;
+            return box;
+        }
+
+        private void detectorBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             var box = (ComboBox) sender;
             var detectorName = box.Name;
@@ -339,6 +345,13 @@ namespace NabViz
             chart1.Series[LowerChartArea + detectorName].Enabled = true;
             chart1.Series[UpperChartArea + detectorName].MarkerStyle = markerStyle;
             chart1.Series[LowerChartArea + detectorName].MarkerStyle = markerStyle;
+        }
+
+        private void thresholdBox_TextChanged(object sender, EventArgs e)
+        {
+            var box = (TextBox)sender;
+            var detectorName = box.Name;
+
         }
     }
 }

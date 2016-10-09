@@ -7,18 +7,11 @@ namespace NabViz
 {
     class DetectionResults
     {
-        private static DetectionResults _instance;
         private readonly Dictionary<string, Dictionary<string, Dictionary<DateTime, double>>> _resultsByDetector;
 
         private DetectionResults()
         {
-            _resultsByDetector = new Dictionary<string, Dictionary<string, Dictionary<DateTime, double>>>();
-            var dir = new DirectoryInfo(Path.Combine("..", "results"));
-            foreach (var detectorDir in dir.GetDirectories())
-            {
-                var detectorName = detectorDir.ToString();
-                _resultsByDetector.Add(detectorName, new Dictionary<string, Dictionary<DateTime, double>>());
-            }
+            _resultsByDetector = Detectors.List.ToDictionary(s => s, s => new Dictionary<string, Dictionary<DateTime, double>>());
             _instance = this;
         }
 
@@ -44,12 +37,10 @@ namespace NabViz
                     }
                 }
             }
-
         }
 
+        private static DetectionResults _instance;
         public static DetectionResults Instance => _instance ?? (_instance = new DetectionResults());
-
         public static Dictionary<string, Dictionary<string, Dictionary<DateTime, double>>> ResultsByDetector => Instance._resultsByDetector;
-
     }
 }
