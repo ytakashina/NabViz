@@ -27,7 +27,7 @@ namespace NabViz
             if (_instance._resultsByDetector.First().Value.ContainsKey(dataPath)) return;
             foreach (var detectorName in _instance._resultsByDetector.Keys)
             {
-                _instance._resultsByDetector[detectorName][dataPath] = new Dictionary<DateTime, double>();
+                _instance._resultsByDetector[detectorName].Add(dataPath, new Dictionary<DateTime, double>());
                 var path = Path.Combine("..", "results", detectorName, dataPath.Insert(dataPath.LastIndexOf(Path.DirectorySeparatorChar) + 1, detectorName + "_"));
                 using (var sr = new StreamReader(path))
                 {
