@@ -75,8 +75,8 @@ namespace NabViz
             for (var i = 0; i < DetectionResults.ResultsByDetector.Count; i++)
             {
                 var detectorNames = DetectionResults.ResultsByDetector.Keys;
-                tableLayoutPanel1.Controls.Add(new Label { Text = detectorNames.ElementAt(i) });
-                tableLayoutPanel1.Controls.Add(ComboBoxFactory.Create());
+                tableLayoutPanel1.Controls.Add(new Label {Text = detectorNames.ElementAt(i)});
+                tableLayoutPanel1.Controls.Add(CreateComboBox(detectorNames.ElementAt(i)));
 
                 chart1.Series.Add(new Series
                 {
@@ -84,11 +84,11 @@ namespace NabViz
                     XValueType = ChartValueType.DateTime,
                     ChartArea = UpperChartArea,
                     ChartType = SeriesChartType.Point,
-                    MarkerStyle = (MarkerStyle)(i % 9 + 1),
                     MarkerSize = 10,
                     MarkerBorderWidth = 1,
                     MarkerBorderColor = Color.Red,
-                    Color = Color.Transparent
+                    Color = Color.Transparent,
+                    Enabled = false
                 });
                 chart1.Series.Add(new Series
                 {
@@ -96,11 +96,12 @@ namespace NabViz
                     XValueType = ChartValueType.DateTime,
                     ChartArea = LowerChartArea,
                     ChartType = SeriesChartType.Point,
-                    MarkerStyle = (MarkerStyle)(i % 9 + 1),
+                    MarkerStyle = MarkerStyle.None,
                     MarkerSize = 20,
                     MarkerBorderWidth = 1,
                     MarkerBorderColor = Color.Red,
-                    Color = Color.Transparent
+                    Color = Color.Transparent,
+                    Enabled = false
                 });
             }
 
@@ -146,7 +147,7 @@ namespace NabViz
 
         private void DrawSelectedRange()
         {
-            _graphics.DrawRectangle(Pens.Red, (Rectangle)_selection);
+            _graphics.DrawRectangle(Pens.Red, (Rectangle) _selection);
         }
 
         private void DrawAnomaryWindow(string name)
@@ -154,12 +155,12 @@ namespace NabViz
             if (treeView1.SelectedNode.Text.Split('.').Last() != "csv") return;
             var axisX = chart1.ChartAreas[name].AxisX;
             var axisY = chart1.ChartAreas[name].AxisY;
-            var minY = (int)axisY.ValueToPixelPosition(axisY.Minimum);
-            var maxY = (int)axisY.ValueToPixelPosition(axisY.Maximum);
+            var minY = (int) axisY.ValueToPixelPosition(axisY.Minimum);
+            var maxY = (int) axisY.ValueToPixelPosition(axisY.Maximum);
             foreach (var window in AnomalyLabels.Instance[treeView1.SelectedNode.FullPath])
             {
-                var minX = (int)axisX.ValueToPixelPosition(window.Item1.ToOADate());
-                var maxX = (int)axisX.ValueToPixelPosition(window.Item2.ToOADate());
+                var minX = (int) axisX.ValueToPixelPosition(window.Item1.ToOADate());
+                var maxX = (int) axisX.ValueToPixelPosition(window.Item2.ToOADate());
                 _graphics.FillRectangle(_windowBrush, minX, maxY, maxX - minX, minY - maxY);
             }
         }
@@ -202,24 +203,28 @@ namespace NabViz
             _dataReader = new DataReader(chart1.Series[UpperChartArea]);
             _dataLoadCompleted = true;
 
-            var dataPoints = new List<DataPoint>();
+
+            var detectors = DetectionResults.ResultsByDetector;
+            var dataPoints = detectors.Keys.ToDictionary(key => key, key => new List<DataPoint>());
+
             while (!_dataReader.EndOfStream)
             {
                 var point = _dataReader.Next;
-                foreach (var detector in DetectionResults.ResultsByDetector)
+                foreach (var detector in detectors)
                 {
                     var score = detector.Value[treeView1.SelectedNode.FullPath][DateTime.FromOADate(point.XValue)];
-                    if (score >= 1) dataPoints.Add(point);
+                    if (score >= 1) dataPoints[detector.Key].Add(point);
                 }
             }
 
-            foreach (var detector in DetectionResults.ResultsByDetector)
+            foreach (var detectorName in detectors.Keys)
             {
-                chart1.Invoke((Action)(() => {
-                    foreach (var point in dataPoints)
+                chart1.Invoke((Action) (() =>
+                {
+                    foreach (var point in dataPoints[detectorName])
                     {
-                        chart1.Series[UpperChartArea + detector.Key].Points.Add(point.Clone());
-                        chart1.Series[LowerChartArea + detector.Key].Points.Add(point.Clone());
+                        chart1.Series[UpperChartArea + detectorName].Points.Add(point.Clone());
+                        chart1.Series[LowerChartArea + detectorName].Points.Add(point.Clone());
                     }
                 }));
             }
@@ -261,7 +266,7 @@ namespace NabViz
 
             if (mousePosition.Y > minY) return;
 
-            _selection.X = mousePosition.X - _selection.Width / 2;
+            _selection.X = mousePosition.X - _selection.Width/2;
             AdjustSelection();
         }
 
@@ -270,9 +275,9 @@ namespace NabViz
             if (!_dataLoadCompleted) return;
             if (_selectionFixed) return;
 
-            var delta = e.Delta * SystemInformation.MouseWheelScrollLines / 60.0;
+            var delta = e.Delta*SystemInformation.MouseWheelScrollLines/60.0;
             _selection.Width += delta;
-            _selection.X -= delta / 2;
+            _selection.X -= delta/2;
             chart1.ChartAreas[LowerChartArea].AxisX.IntervalAutoMode = IntervalAutoMode.VariableCount;
             AdjustSelection();
             chart1.ChartAreas[LowerChartArea].AxisX.IntervalAutoMode = IntervalAutoMode.FixedCount;
@@ -304,6 +309,36 @@ namespace NabViz
             DrawAnomaryWindow(UpperChartArea);
             DrawAnomaryWindow(LowerChartArea);
             pictureBox1.Refresh();
+        }
+
+        private ComboBox CreateComboBox(string detectorName)
+        {
+            var box = new ComboBox();
+            for (int i = 0; i < 10; i++)
+            {
+                box.Items.Add((MarkerStyle) i);
+            }
+            box.Name = detectorName;
+            box.SelectedIndex = 0;
+            box.SelectedIndexChanged += comboBox_SelectedIndexChanged;
+            return box;
+        }
+
+        private void comboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var box = (ComboBox) sender;
+            var detectorName = box.Name;
+            var markerStyle = (MarkerStyle)Enum.Parse(typeof(MarkerStyle), box.SelectedItem.ToString());
+            if (markerStyle == MarkerStyle.None)
+            {
+                chart1.Series[UpperChartArea + detectorName].Enabled = false;
+                chart1.Series[LowerChartArea + detectorName].Enabled = false;
+                return;
+            }
+            chart1.Series[UpperChartArea + detectorName].Enabled = true;
+            chart1.Series[LowerChartArea + detectorName].Enabled = true;
+            chart1.Series[UpperChartArea + detectorName].MarkerStyle = markerStyle;
+            chart1.Series[LowerChartArea + detectorName].MarkerStyle = markerStyle;
         }
     }
 }
