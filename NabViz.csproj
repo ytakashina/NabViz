@@ -53,7 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="src\AnomalyLabels.cs" />
-    <Compile Include="src\AnomalyResults.cs" />
+    <Compile Include="src\DetectionResults.cs" />
     <Compile Include="src\ComboBoxFactory.cs" />
     <Compile Include="src\DataReader.cs" />
     <Compile Include="src\Form1.cs">

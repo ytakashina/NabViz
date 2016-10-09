@@ -10,7 +10,7 @@ namespace NabViz
 
         private ComboBoxFactory() { }
 
-        public ComboBox GetComboBox()
+        public ComboBox Create()
         {
             var box = new ComboBox();
             for (int i = 0; i < 9; i++)

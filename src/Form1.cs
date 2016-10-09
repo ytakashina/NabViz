@@ -14,7 +14,6 @@ namespace NabViz
     {
         private const string UpperChartArea = "Global";
         private const string LowerChartArea = "Local";
-        private readonly List<string> _detectors;
         private Graphics _graphics;
         private readonly Brush _windowBrush;
         private RectangleD _selection;
@@ -77,26 +76,23 @@ namespace NabViz
                 treeView1.Nodes.Add(node);
             }
 
-            _detectors = new List<string>();
-//            foreach (var elm in AnomalyResults.Dictionary)
-//            {
-//                _detectors.Add(elm.Key);
-//            }
-            foreach (var detector in _detectors)
+            foreach (var detectorName in DetectionResults.ResultsByDetector.Keys)
             {
-                tableLayoutPanel1.Controls.Add(new CheckBox());
-                tableLayoutPanel1.Controls.Add(new Label { Text = detector });
-                tableLayoutPanel1.Controls.Add(ComboBoxFactory.Instance.GetComboBox());
             }
-            for (var i = 0; i < _detectors.Count; i++)
+            for (var i = 0; i < DetectionResults.ResultsByDetector.Count; i++)
             {
+                var detectorNames = DetectionResults.ResultsByDetector.Keys;
+                tableLayoutPanel1.Controls.Add(new CheckBox());
+                tableLayoutPanel1.Controls.Add(new Label { Text =  detectorNames.ElementAt(i)});
+                tableLayoutPanel1.Controls.Add(ComboBoxFactory.Instance.Create());
+
                 chart1.Series.Add(new Series
                 {
-                    Name = UpperChartArea + _detectors[i],
+                    Name = UpperChartArea + detectorNames.ElementAt(i),
                     XValueType = ChartValueType.DateTime,
                     ChartArea = UpperChartArea,
                     ChartType = SeriesChartType.Point,
-                    MarkerStyle = (MarkerStyle)(i%9+1),
+                    MarkerStyle = (MarkerStyle)(i % 9 + 1),
                     MarkerSize = 10,
                     MarkerBorderWidth = 1,
                     MarkerBorderColor = Color.Red,
@@ -104,7 +100,7 @@ namespace NabViz
                 });
                 chart1.Series.Add(new Series
                 {
-                    Name = LowerChartArea + _detectors[i],
+                    Name = LowerChartArea + detectorNames.ElementAt(i),
                     XValueType = ChartValueType.DateTime,
                     ChartArea = LowerChartArea,
                     ChartType = SeriesChartType.Point,
@@ -202,10 +198,10 @@ namespace NabViz
 
             chart1.Series[UpperChartArea].Points.Clear();
             chart1.Series[LowerChartArea].Points.Clear();
-            foreach (var detector in _detectors)
+            foreach (var detectorName in DetectionResults.ResultsByDetector.Keys)
             {
-                chart1.Series[UpperChartArea + detector].Points.Clear();
-                chart1.Series[LowerChartArea + detector].Points.Clear();
+                chart1.Series[UpperChartArea + detectorName].Points.Clear();
+                chart1.Series[LowerChartArea + detectorName].Points.Clear();
             }
 
             var path = Path.Combine("..", "data", treeView1.SelectedNode.FullPath);
@@ -224,21 +220,34 @@ namespace NabViz
                 }
             }
 
-
-            //foreach (var detector in AnomalyResults.Dictionary)
-            //{
-            //    foreach (var score in detector.Value[detector.Key + "_" + _fileName.SplitPath.DirectorySeparatorChar).Last()])
-            //    {
-            //        if (score.Item2 > 0.9999)
-            //        {
-            //            chart1.Invoke((Action)(() => chart1.Series[UpperChartArea + detector.Key].Points.AddXY(score.Item1, score.Item2)));
-            //            chart1.Invoke((Action)(() => chart1.Series[LowerChartArea + detector.Key].Points.AddXY(score.Item1, score.Item2)));
-            //        }
-            //    }
-            //}
+            DetectionResults.Load(treeView1.SelectedNode.FullPath);
 
             _dataReader = new DataReader(chart1.Series[UpperChartArea]);
             _dataLoadCompleted = true;
+
+            var dataPoints = new List<DataPoint>();
+            while (!_dataReader.EndOfStream)
+            {
+                var point = _dataReader.Next;
+                foreach (var detector in DetectionResults.ResultsByDetector)
+                {
+                    var score = detector.Value[treeView1.SelectedNode.FullPath][DateTime.FromOADate(point.XValue)];
+                    if (score >= 1) dataPoints.Add(point);
+                }
+            }
+
+            foreach (var detector in DetectionResults.ResultsByDetector)
+            {
+                chart1.Invoke((Action)(() => {
+                    foreach (var point in dataPoints)
+                    {
+                        chart1.Series[UpperChartArea + detector.Key].Points.Add(point.Clone());
+                        chart1.Series[LowerChartArea + detector.Key].Points.Add(point.Clone());
+                    }
+                }));
+            }
+
+            _dataReader.Rewind();
 
             // Chart の仕様上、一度描画されないと ValueToPixelPosition が使えないらしい。
             // RecalculateAxesScale でなんとかならなかった。
@@ -337,7 +346,7 @@ namespace NabViz
             //int i = 0;
             //foreach (var detector in _detectors)
             //{
-            //    var score = AnomalyResults.Dictionary[detector][listBox1.SelectedItem.ToString().Split(Path.DirectorySeparatorChar).Last()][i++].Item2;
+            //    var score = DetectionResults.ResultsByDetector[detector][listBox1.SelectedItem.ToString().Split(Path.DirectorySeparatorChar).Last()][i++].Item2;
             //    if (score > 0.9999)
             //    {
             //        chart1.Invoke((Action)(() => chart1.Series[UpperChartArea + detector].Points.AddXY(point.XValue, point.YValues[0])));
