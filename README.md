@@ -1,13 +1,14 @@
 # NabViz
 A visualization tool for Numenta Anomaly Benchmark (NAB).
 
+![Screen shot](./image.png)
 
-# Requirements
+## Requirements
 - .NET 4.5
 - Json.NET
 
 
-# How to use
+## How to use
 This application assumes the following directory structure.
 
 ```
