@@ -31,6 +31,7 @@ namespace NabViz
 
         public static void Load(string dataPath)
         {
+            if (_instance._resultsByDetector.First().Value.ContainsKey(dataPath)) return;
             foreach (var detectorName in _instance._resultsByDetector.Keys)
             {
                 _instance._resultsByDetector[detectorName][dataPath] = new Dictionary<DateTime, double>();

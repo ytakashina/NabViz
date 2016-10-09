@@ -19,8 +19,7 @@ namespace NabViz
         private RectangleD _selection;
         private bool _dataLoadCompleted;
         private DataReader _dataReader;
-        private readonly System.Timers.Timer timer2;
-        private readonly double _defaultInterval;
+        private bool _selectionFixed;
 
         public Form1()
         {
@@ -36,9 +35,6 @@ namespace NabViz
             pictureBox1.Parent = chart1;
 
             timer1.Start();
-            timer2 = new System.Timers.Timer();
-            timer2.Elapsed += timer2_Tick;
-            _defaultInterval = timer2.Interval;
 
             chart1.ChartAreas.Add(new ChartArea(UpperChartArea));
             chart1.ChartAreas.Add(new ChartArea(LowerChartArea));
@@ -76,9 +72,6 @@ namespace NabViz
                 treeView1.Nodes.Add(node);
             }
 
-            foreach (var detectorName in DetectionResults.ResultsByDetector.Keys)
-            {
-            }
             for (var i = 0; i < DetectionResults.ResultsByDetector.Count; i++)
             {
                 var detectorNames = DetectionResults.ResultsByDetector.Keys;
@@ -118,9 +111,9 @@ namespace NabViz
         private void InitializeInnerPlotPosition(string name)
         {
             var inner = chart1.ChartAreas[name].InnerPlotPosition;
-            inner.Width = 94;
+            inner.Width = 92;
             inner.Height = 90;
-            inner.X = 6;
+            inner.X = 8;
             inner.Y = 0;
         }
 
@@ -154,19 +147,7 @@ namespace NabViz
 
         private void DrawSelectedRange()
         {
-            _graphics.DrawRectangle(checkBox1.Checked ? Pens.Red : Pens.Orange, (Rectangle)_selection);
-        }
-
-        private void DrawDataScanner(string name)
-        {
-            if (!_dataLoadCompleted) return;
-            if (_dataReader == null) return;
-            var axisX = chart1.ChartAreas[name].AxisX;
-            var axisY = chart1.ChartAreas[name].AxisY;
-            var x = (int)axisX.ValueToPixelPosition(_dataReader.Current.XValue);
-            var minY = (int)axisY.ValueToPixelPosition(axisY.Minimum);
-            var maxY = (int)axisY.ValueToPixelPosition(axisY.Maximum);
-            _graphics.DrawLine(Pens.Red, new Point(x, minY), new Point(x, maxY));
+            _graphics.DrawRectangle(Pens.Red, (Rectangle)_selection);
         }
 
         private void DrawAnomaryWindow(string name)
@@ -186,9 +167,6 @@ namespace NabViz
 
         private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            // 実行を止める。
-            checkBox2.Checked = false;
-
             // csv ファイルが選択されたときのみ以降を実行する。
             if (treeView1.SelectedNode.Text.Split('.').Last() != "csv") return;
 
@@ -278,7 +256,7 @@ namespace NabViz
         private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
         {
             if (!_dataLoadCompleted) return;
-            if (checkBox1.Checked) return; // trace が ON だったら無視。
+            if (_selectionFixed) return;
 
             var axisY = chart1.ChartAreas[UpperChartArea].AxisY;
             var minY = axisY.ValueToPixelPosition(axisY.Minimum);
@@ -293,7 +271,8 @@ namespace NabViz
         private void pictureBox1_MouseWheel(object sender, MouseEventArgs e)
         {
             if (!_dataLoadCompleted) return;
-            if (checkBox1.Checked) return; // trace が ON だったら無視。
+            if (_selectionFixed) return;
+
             var delta = e.Delta * SystemInformation.MouseWheelScrollLines / 60.0;
             _selection.Width += delta;
             _selection.X -= delta / 2;
@@ -309,7 +288,7 @@ namespace NabViz
 
         private void pictureBox1_Click(object sender, EventArgs e)
         {
-            checkBox1.Checked = !checkBox1.Checked;
+            _selectionFixed = !_selectionFixed;
         }
 
         private void timer1_Tick(object sender, EventArgs e)
@@ -325,88 +304,9 @@ namespace NabViz
 
             _graphics.Clear(Color.Transparent);
             DrawSelectedRange();
-            DrawDataScanner(UpperChartArea);
-            DrawDataScanner(LowerChartArea);
             DrawAnomaryWindow(UpperChartArea);
             DrawAnomaryWindow(LowerChartArea);
             pictureBox1.Refresh();
-        }
-
-        private void timer2_Tick(object sender, EventArgs e)
-        {
-            if (!_dataLoadCompleted) return;
-            if (_dataReader == null) return;
-            if (_dataReader.EndOfStream)
-            {
-                checkBox2.Invoke((Action)(() => { checkBox2.Checked = false; }));
-                return;
-            }
-
-            var point = _dataReader.Next;
-            //int i = 0;
-            //foreach (var detector in _detectors)
-            //{
-            //    var score = DetectionResults.ResultsByDetector[detector][listBox1.SelectedItem.ToString().Split(Path.DirectorySeparatorChar).Last()][i++].Item2;
-            //    if (score > 0.9999)
-            //    {
-            //        chart1.Invoke((Action)(() => chart1.Series[UpperChartArea + detector].Points.AddXY(point.XValue, point.YValues[0])));
-            //        chart1.Invoke((Action)(() => chart1.Series[LowerChartArea + detector].Points.AddXY(point.XValue, point.YValues[0])));
-            //        var str = "[" + DateTime.FromOADate(point.XValue) + ", " + point.YValues[0] + "]";
-            //    }
-            //}
-
-            // trace
-            if (checkBox1.Checked)
-            {
-                var axisX = chart1.ChartAreas[UpperChartArea].AxisX;
-                var x = axisX.ValueToPixelPosition(_dataReader.Current.XValue) - _selection.Width / 2;
-                if (x > _selection.X) _selection.X = x;
-                var maxX = axisX.ValueToPixelPosition(axisX.Maximum);
-                if (_selection.Right > maxX) _selection.X = maxX - _selection.Width;
-            }
-
-        }
-
-        private void checkBox2_CheckedChanged(object sender, EventArgs e)
-        {
-            if (checkBox2.Checked)
-            {
-                if (!_dataLoadCompleted)
-                {
-                    checkBox2.Checked = false;
-                    return;
-                }
-                timer2.Start();
-            }
-            else
-            {
-                timer2.Stop();
-            }
-        }
-
-        private void radioButton1_CheckedChanged(object sender, EventArgs e)
-        {
-            timer2.Interval = _defaultInterval;
-        }
-
-        private void radioButton2_CheckedChanged(object sender, EventArgs e)
-        {
-            timer2.Interval = _defaultInterval / 2;
-        }
-
-        private void radioButton3_CheckedChanged(object sender, EventArgs e)
-        {
-            timer2.Interval = _defaultInterval / 4;
-        }
-
-        private void radioButton4_CheckedChanged(object sender, EventArgs e)
-        {
-            timer2.Interval = _defaultInterval / 8;
-        }
-
-        private void radioButton5_CheckedChanged(object sender, EventArgs e)
-        {
-            timer2.Interval = _defaultInterval / 16;
         }
     }
 }
