@@ -14,8 +14,6 @@ namespace NabViz
     {
         private const string UpperChartArea = "Global";
         private const string LowerChartArea = "Local";
-        private readonly List<string> _detectors;
-        private string _fileName;
         private Graphics _graphics;
         private readonly Brush _windowBrush;
         private RectangleD _selection;
@@ -28,12 +26,7 @@ namespace NabViz
         {
             InitializeComponent();
 
-            var rootDir = new DirectoryInfo(@"..\data");
-            foreach (var dir in rootDir.GetDirectories())
-            {
-                var files = dir.GetFiles("*.csv").Select(file => Path.Combine(dir.ToString(), file.ToString()));
-                foreach (var f in files) listBox1.Items.Add(f);
-            }
+            treeView1.PathSeparator = Path.DirectorySeparatorChar.ToString();
 
             var bmp = new Bitmap(pictureBox1.Width, pictureBox1.Height, PixelFormat.Format32bppArgb);
             bmp.MakeTransparent(Color.White);
@@ -74,26 +67,32 @@ namespace NabViz
                 Color = Color.CornflowerBlue
             });
 
-            _detectors = new List<string>();
-            foreach (var elm in AnomalyResults.Dictionary)
+            var rootDir = new DirectoryInfo(Path.Combine("..", "data"));
+            foreach (var dir in rootDir.GetDirectories())
             {
-                _detectors.Add(elm.Key);
+                var node = new TreeNode(dir.ToString());
+                var files = dir.GetFiles("*.csv");
+                foreach (var f in files) node.Nodes.Add(f.ToString());
+                treeView1.Nodes.Add(node);
             }
-            foreach (var detector in _detectors)
+
+            foreach (var detectorName in DetectionResults.ResultsByDetector.Keys)
             {
+            }
+            for (var i = 0; i < DetectionResults.ResultsByDetector.Count; i++)
+            {
+                var detectorNames = DetectionResults.ResultsByDetector.Keys;
                 tableLayoutPanel1.Controls.Add(new CheckBox());
-                tableLayoutPanel1.Controls.Add(new Label { Text = detector });
-                tableLayoutPanel1.Controls.Add(ComboBoxFactory.Instance.GetComboBox());
-            }
-            for (var i = 0; i < _detectors.Count; i++)
-            {
+                tableLayoutPanel1.Controls.Add(new Label { Text =  detectorNames.ElementAt(i)});
+                tableLayoutPanel1.Controls.Add(ComboBoxFactory.Create());
+
                 chart1.Series.Add(new Series
                 {
-                    Name = UpperChartArea + _detectors[i],
+                    Name = UpperChartArea + detectorNames.ElementAt(i),
                     XValueType = ChartValueType.DateTime,
                     ChartArea = UpperChartArea,
                     ChartType = SeriesChartType.Point,
-                    MarkerStyle = (MarkerStyle)(i%9+1),
+                    MarkerStyle = (MarkerStyle)(i % 9 + 1),
                     MarkerSize = 10,
                     MarkerBorderWidth = 1,
                     MarkerBorderColor = Color.Red,
@@ -101,7 +100,7 @@ namespace NabViz
                 });
                 chart1.Series.Add(new Series
                 {
-                    Name = LowerChartArea + _detectors[i],
+                    Name = LowerChartArea + detectorNames.ElementAt(i),
                     XValueType = ChartValueType.DateTime,
                     ChartArea = LowerChartArea,
                     ChartType = SeriesChartType.Point,
@@ -172,12 +171,12 @@ namespace NabViz
 
         private void DrawAnomaryWindow(string name)
         {
-            if (_fileName == null) return;
+            if (treeView1.SelectedNode.Text.Split('.').Last() != "csv") return;
             var axisX = chart1.ChartAreas[name].AxisX;
             var axisY = chart1.ChartAreas[name].AxisY;
             var minY = (int)axisY.ValueToPixelPosition(axisY.Minimum);
             var maxY = (int)axisY.ValueToPixelPosition(axisY.Maximum);
-            foreach (var window in AnomalyLabels.Instance[_fileName])
+            foreach (var window in AnomalyLabels.Instance[treeView1.SelectedNode.FullPath])
             {
                 var minX = (int)axisX.ValueToPixelPosition(window.Item1.ToOADate());
                 var maxX = (int)axisX.ValueToPixelPosition(window.Item2.ToOADate());
@@ -185,58 +184,70 @@ namespace NabViz
             }
         }
 
-        private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
+        private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
         {
             // 実行を止める。
             checkBox2.Checked = false;
+
+            // csv ファイルが選択されたときのみ以降を実行する。
+            if (treeView1.SelectedNode.Text.Split('.').Last() != "csv") return;
 
             // イベント駆動は実行時の順序保証がないので、
             // 明示的にデータの読み込みの終了を管理する必要がある。
             _dataLoadCompleted = false;
 
-            var path = Path.Combine("..", "data", listBox1.SelectedItem.ToString());
-            _fileName = listBox1.SelectedItem.ToString();
-
             chart1.Series[UpperChartArea].Points.Clear();
             chart1.Series[LowerChartArea].Points.Clear();
-            foreach (var detector in _detectors)
+            foreach (var detectorName in DetectionResults.ResultsByDetector.Keys)
             {
-                chart1.Series[UpperChartArea + detector].Points.Clear();
-                chart1.Series[LowerChartArea + detector].Points.Clear();
+                chart1.Series[UpperChartArea + detectorName].Points.Clear();
+                chart1.Series[LowerChartArea + detectorName].Points.Clear();
             }
 
+            var path = Path.Combine("..", "data", treeView1.SelectedNode.FullPath);
             using (var sr = new StreamReader(path))
             {
-                var head = sr.ReadLine().Split(',');
+                var head = sr.ReadLine().Split(',').ToList();
+                var dateColumnIndex = head.IndexOf("timestamp");
+                var valueColumnIndex = head.IndexOf("value");
                 while (!sr.EndOfStream)
                 {
                     var line = sr.ReadLine().Split(',');
-                    var dt = DateTime.ParseExact(line[0], "yyyy-MM-dd HH:mm:ss", null);
-                    var value = double.Parse(line[1]);
-                    chart1.Series[UpperChartArea].Points.AddXY(dt, value);
-                    chart1.Series[LowerChartArea].Points.AddXY(dt, value);
+                    var date = DateTime.ParseExact(line[dateColumnIndex], "yyyy-MM-dd HH:mm:ss", null);
+                    var value = double.Parse(line[valueColumnIndex]);
+                    chart1.Series[UpperChartArea].Points.AddXY(date, value);
+                    chart1.Series[LowerChartArea].Points.AddXY(date, value);
                 }
             }
 
-
-            foreach (var detector in AnomalyResults.Dictionary)
-            {
-                foreach (var score in detector.Value[detector.Key + "_" + _fileName.Split('\\').Last()])
-                {
-                    if (score.Item2 > 0.9999)
-                    {
-                        chart1.Invoke((Action)(() => chart1.Series[UpperChartArea + detector.Key].Points.AddXY(score.Item1, score.Item2)));
-                        chart1.Invoke((Action)(() => chart1.Series[LowerChartArea + detector.Key].Points.AddXY(score.Item1, score.Item2)));
-                    }
-                }
-            }
-
-
-
-
+            DetectionResults.Load(treeView1.SelectedNode.FullPath);
 
             _dataReader = new DataReader(chart1.Series[UpperChartArea]);
             _dataLoadCompleted = true;
+
+            var dataPoints = new List<DataPoint>();
+            while (!_dataReader.EndOfStream)
+            {
+                var point = _dataReader.Next;
+                foreach (var detector in DetectionResults.ResultsByDetector)
+                {
+                    var score = detector.Value[treeView1.SelectedNode.FullPath][DateTime.FromOADate(point.XValue)];
+                    if (score >= 1) dataPoints.Add(point);
+                }
+            }
+
+            foreach (var detector in DetectionResults.ResultsByDetector)
+            {
+                chart1.Invoke((Action)(() => {
+                    foreach (var point in dataPoints)
+                    {
+                        chart1.Series[UpperChartArea + detector.Key].Points.Add(point.Clone());
+                        chart1.Series[LowerChartArea + detector.Key].Points.Add(point.Clone());
+                    }
+                }));
+            }
+
+            _dataReader.Rewind();
 
             // Chart の仕様上、一度描画されないと ValueToPixelPosition が使えないらしい。
             // RecalculateAxesScale でなんとかならなかった。
@@ -301,18 +312,6 @@ namespace NabViz
             checkBox1.Checked = !checkBox1.Checked;
         }
 
-        private void button1_Click(object sender, EventArgs e)
-        {
-            if (_dataReader == null || _dataReader.EndOfStream) return;
-            var point = _dataReader.Next;
-        }
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-            if (_dataReader == null || _dataReader.StartOfStream) return;
-            var point = _dataReader.Prev;
-        }
-
         private void timer1_Tick(object sender, EventArgs e)
         {
             if (!_dataLoadCompleted) return;
@@ -347,7 +346,7 @@ namespace NabViz
             //int i = 0;
             //foreach (var detector in _detectors)
             //{
-            //    var score = AnomalyResults.Dictionary[detector][listBox1.SelectedItem.ToString().Split('\\').Last()][i++].Item2;
+            //    var score = DetectionResults.ResultsByDetector[detector][listBox1.SelectedItem.ToString().Split(Path.DirectorySeparatorChar).Last()][i++].Item2;
             //    if (score > 0.9999)
             //    {
             //        chart1.Invoke((Action)(() => chart1.Series[UpperChartArea + detector].Points.AddXY(point.XValue, point.YValues[0])));
@@ -378,14 +377,10 @@ namespace NabViz
                     return;
                 }
                 timer2.Start();
-                button1.Enabled = false;
-                button2.Enabled = false;
             }
             else
             {
                 timer2.Stop();
-                button1.Enabled = true;
-                button2.Enabled = true;
             }
         }
 
@@ -413,6 +408,5 @@ namespace NabViz
         {
             timer2.Interval = _defaultInterval / 16;
         }
-
     }
 }

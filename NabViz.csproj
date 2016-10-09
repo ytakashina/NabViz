@@ -52,21 +52,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AnomalyLabels.cs" />
-    <Compile Include="AnomalyResults.cs" />
-    <Compile Include="ComboBoxFactory.cs" />
-    <Compile Include="DataReader.cs" />
-    <Compile Include="Form1.cs">
+    <Compile Include="src\AnomalyLabels.cs" />
+    <Compile Include="src\DetectionResults.cs" />
+    <Compile Include="src\ComboBoxFactory.cs" />
+    <Compile Include="src\DataReader.cs" />
+    <Compile Include="src\Form1.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form1.Designer.cs">
+    <Compile Include="src\Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
-    <Compile Include="Program.cs" />
+    <Compile Include="src\Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RichForms.Geometry.cs" />
-    <Compile Include="RichForms.TextBox.cs" />
-    <EmbeddedResource Include="Form1.resx">
+    <Compile Include="src\RichForms.Geometry.cs" />
+    <Compile Include="src\RichForms.TextBox.cs" />
+    <EmbeddedResource Include="src\Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">

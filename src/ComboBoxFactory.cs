@@ -3,14 +3,11 @@ using System.Windows.Forms.DataVisualization.Charting;
 
 namespace NabViz
 {
-    class ComboBoxFactory
+    static class ComboBoxFactory
     {
         private static int _index;
-        private static ComboBoxFactory _instance = new ComboBoxFactory();
 
-        private ComboBoxFactory() { }
-
-        public ComboBox GetComboBox()
+        public static ComboBox Create()
         {
             var box = new ComboBox();
             for (int i = 0; i < 9; i++)
@@ -20,7 +17,5 @@ namespace NabViz
             box.SelectedIndex = _index++ % 9;
             return box;
         }
-
-        public static ComboBoxFactory Instance => _instance ?? (_instance = new ComboBoxFactory());
     }
 }
