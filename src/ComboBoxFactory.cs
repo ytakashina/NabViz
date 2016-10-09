@@ -10,11 +10,12 @@ namespace NabViz
         public static ComboBox Create()
         {
             var box = new ComboBox();
-            for (int i = 0; i < 9; i++)
+            for (int i = 0; i < 10; i++)
             {
-                box.Items.Add((MarkerStyle)(i%9 + 1));
+                box.Items.Add((MarkerStyle)i);
             }
-            box.SelectedIndex = _index++ % 9;
+
+            box.SelectedIndex = _index++ % 9 + 1;
             return box;
         }
     }
