@@ -70,7 +70,7 @@ namespace NabViz
                 foreach (var f in files) node.Nodes.Add(f.ToString());
                 treeView1.Nodes.Add(node);
             }
-            foreach (var detectorName in DetectionResults.ResultsByDetector.Keys)
+            foreach (var detectorName in Detectors.List)
             {
                 tableLayoutPanel1.Controls.Add(new Label {Text = detectorName});
                 tableLayoutPanel1.Controls.Add(CreateDetectorComboBox(detectorName));
@@ -174,7 +174,7 @@ namespace NabViz
 
             chart1.Series[UpperChartArea].Points.Clear();
             chart1.Series[LowerChartArea].Points.Clear();
-            foreach (var detectorName in DetectionResults.ResultsByDetector.Keys)
+            foreach (var detectorName in Detectors.List)
             {
                 chart1.Series[UpperChartArea + detectorName].Points.Clear();
                 chart1.Series[LowerChartArea + detectorName].Points.Clear();
@@ -195,37 +195,13 @@ namespace NabViz
                     chart1.Series[LowerChartArea].Points.AddXY(date, value);
                 }
             }
-
+//            var x = DetectionResults.By;
             DetectionResults.Load(treeView1.SelectedNode.FullPath);
 
             _dataReader = new DataReader(chart1.Series[UpperChartArea]);
             _dataLoadCompleted = true;
 
-
-            var detectors = DetectionResults.ResultsByDetector;
-            var dataPoints = detectors.Keys.ToDictionary(key => key, key => new List<DataPoint>());
-
-            while (!_dataReader.EndOfStream)
-            {
-                var point = _dataReader.Next;
-                foreach (var detector in detectors)
-                {
-                    var score = detector.Value[treeView1.SelectedNode.FullPath][DateTime.FromOADate(point.XValue)];
-                    if (score >= DetectionThresholds.Instance[detector.Key]) dataPoints[detector.Key].Add(point);
-                }
-            }
-
-            foreach (var detectorName in detectors.Keys)
-            {
-                chart1.Invoke((Action) (() =>
-                {
-                    foreach (var point in dataPoints[detectorName])
-                    {
-                        chart1.Series[UpperChartArea + detectorName].Points.Add(point.Clone());
-                        chart1.Series[LowerChartArea + detectorName].Points.Add(point.Clone());
-                    }
-                }));
-            }
+            UpdateChart();
 
             // Chart の仕様上、一度描画されないと ValueToPixelPosition が使えないらしい。
             // RecalculateAxesScale でなんとかならなかった。
@@ -240,6 +216,36 @@ namespace NabViz
             // 選択範囲を現在の ChartArea[0] に合わせる。
             InitializeSelection();
             AdjustSelection();
+        }
+
+        private void UpdateChart()
+        {
+            var anomalyPoints = Detectors.List.ToDictionary(s => s, s => new List<DataPoint>());
+
+            _dataReader.Rewind();
+            while (!_dataReader.EndOfStream)
+            {
+                var point = _dataReader.Next;
+                foreach (var detector in Detectors.List)
+                {
+                    var score = DetectionResults.Dictionary[detector][treeView1.SelectedNode.FullPath][DateTime.FromOADate(point.XValue)];
+                    if (score >= DetectionThresholds.Dictionary[detector]) anomalyPoints[detector].Add(point);
+                }
+            }
+
+            foreach (var detectorName in Detectors.List)
+            {
+                chart1.Invoke((Action)(() =>
+                {
+                    chart1.Series[UpperChartArea + detectorName].Points.Clear();
+                    chart1.Series[LowerChartArea + detectorName].Points.Clear();
+                    foreach (var point in anomalyPoints[detectorName])
+                    {
+                        chart1.Series[UpperChartArea + detectorName].Points.Add(point.Clone());
+                        chart1.Series[LowerChartArea + detectorName].Points.Add(point.Clone());
+                    }
+                }));
+            }
         }
 
         private void Form1_SizeChanged(object sender, EventArgs e)
@@ -325,7 +331,7 @@ namespace NabViz
             var box = new TextBox();
             box.Width = 60;
             box.Name = detectorName;
-            box.Text = DetectionThresholds.Instance[detectorName].ToString();
+            box.Text = DetectionThresholds.Dictionary[detectorName].ToString();
             box.TextChanged += thresholdBox_TextChanged;
             return box;
         }
@@ -351,7 +357,10 @@ namespace NabViz
         {
             var box = (TextBox)sender;
             var detectorName = box.Name;
-
+            double tmp;
+            if (!double.TryParse(box.Text, out tmp)) return;
+            DetectionThresholds.Dictionary[detectorName] = tmp;
+            UpdateChart();
         }
     }
 }

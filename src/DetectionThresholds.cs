@@ -9,7 +9,7 @@ namespace NabViz
     class DetectionThresholds
     {
         private readonly Dictionary<string, string> _profiles;
-        private readonly Dictionary<string, double> _standardThresholds;
+        private readonly Dictionary<string, double> _thresholds;
 
         private DetectionThresholds()
         {
@@ -20,7 +20,7 @@ namespace NabViz
                 {"LFN", "reward_low_FN_rate"}
             };
 
-            _standardThresholds = new Dictionary<string, double>();
+            _thresholds = new Dictionary<string, double>();
             foreach (var detector in Detectors.List)
             {
                 var path = Path.Combine("..", "results", detector, detector + "_standard_scores.csv");
@@ -29,15 +29,13 @@ namespace NabViz
                     var head = sr.ReadLine().Split(',').ToList();
                     var thresholdColumnIndex = head.IndexOf("Threshold");
                     var threshold = double.Parse(sr.ReadLine().Split(',')[thresholdColumnIndex]);
-                    _standardThresholds.Add(detector, threshold);
+                    _thresholds.Add(detector, threshold);
                 }
             }
             _instance = this;
         }
 
-        public double this[string key] => _standardThresholds[key];
-
         private static DetectionThresholds _instance;
-        public static DetectionThresholds Instance => _instance ?? (_instance = new DetectionThresholds());
+        public static Dictionary<string, double> Dictionary => (_instance ?? (_instance = new DetectionThresholds()))._thresholds;
     }
 }
