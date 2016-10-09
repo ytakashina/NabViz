@@ -17,14 +17,7 @@ namespace NabViz
             foreach (var detectorDir in dir.GetDirectories())
             {
                 var detectorName = detectorDir.ToString();
-                try
-                {
-                    _resultsByDetector.Add(detectorName, new Dictionary<string, Dictionary<DateTime, double>>());
-                }
-                catch (ArgumentException e)
-                {
-                    Console.WriteLine(e.Message);
-                }
+                _resultsByDetector.Add(detectorName, new Dictionary<string, Dictionary<DateTime, double>>());
             }
             _instance = this;
         }
@@ -34,7 +27,7 @@ namespace NabViz
             if (_instance._resultsByDetector.First().Value.ContainsKey(dataPath)) return;
             foreach (var detectorName in _instance._resultsByDetector.Keys)
             {
-                _instance._resultsByDetector[detectorName][dataPath] = new Dictionary<DateTime, double>();
+                _instance._resultsByDetector[detectorName].Add(dataPath, new Dictionary<DateTime, double>());
                 var path = Path.Combine("..", "results", detectorName, dataPath.Insert(dataPath.LastIndexOf(Path.DirectorySeparatorChar) + 1, detectorName + "_"));
                 using (var sr = new StreamReader(path))
                 {
