@@ -3,7 +3,7 @@ A visualization tool for Numenta Anomaly Benchmark (NAB).
 
 
 # Requirements
-- .NET
+- .NET 4.5
 - Json.NET
 
 
