@@ -31,7 +31,6 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.listBox1 = new System.Windows.Forms.ListBox();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
@@ -48,6 +47,7 @@
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.treeView1 = new System.Windows.Forms.TreeView();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -65,17 +65,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             this.SuspendLayout();
-            // 
-            // listBox1
-            // 
-            this.listBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listBox1.FormattingEnabled = true;
-            this.listBox1.ItemHeight = 12;
-            this.listBox1.Location = new System.Drawing.Point(0, 0);
-            this.listBox1.Name = "listBox1";
-            this.listBox1.Size = new System.Drawing.Size(240, 270);
-            this.listBox1.TabIndex = 3;
-            this.listBox1.SelectedIndexChanged += new System.EventHandler(this.listBox1_SelectedIndexChanged);
             // 
             // splitContainer1
             // 
@@ -104,7 +93,7 @@
             // 
             // splitContainer2.Panel1
             // 
-            this.splitContainer2.Panel1.Controls.Add(this.listBox1);
+            this.splitContainer2.Panel1.Controls.Add(this.treeView1);
             // 
             // splitContainer2.Panel2
             // 
@@ -286,6 +275,15 @@
             // 
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
+            // treeView1
+            // 
+            this.treeView1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.treeView1.Location = new System.Drawing.Point(0, 0);
+            this.treeView1.Name = "treeView1";
+            this.treeView1.Size = new System.Drawing.Size(240, 270);
+            this.treeView1.TabIndex = 0;
+            this.treeView1.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView1_AfterSelect);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -318,8 +316,6 @@
         }
 
         #endregion
-
-        private System.Windows.Forms.ListBox listBox1;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.SplitContainer splitContainer2;
         private System.Windows.Forms.SplitContainer splitContainer3;
@@ -336,6 +332,7 @@
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.DataVisualization.Charting.Chart chart1;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
+        private System.Windows.Forms.TreeView treeView1;
     }
 }
 
