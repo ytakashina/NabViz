@@ -175,7 +175,7 @@ namespace NabViz
 
         private void DrawAnomaryWindow(string name)
         {
-            if (treeView1.SelectedNode.FullPath.Split('.').Last() != "csv") return;
+            if (treeView1.SelectedNode.Text.Split('.').Last() != "csv") return;
             var axisX = chart1.ChartAreas[name].AxisX;
             var axisY = chart1.ChartAreas[name].AxisY;
             var minY = (int)axisY.ValueToPixelPosition(axisY.Minimum);
@@ -186,6 +186,73 @@ namespace NabViz
                 var maxX = (int)axisX.ValueToPixelPosition(window.Item2.ToOADate());
                 _graphics.FillRectangle(_windowBrush, minX, maxY, maxX - minX, minY - maxY);
             }
+        }
+
+        private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            // 実行を止める。
+            checkBox2.Checked = false;
+
+            // csv ファイルが選択されたときのみ以降を実行する。
+            if (treeView1.SelectedNode.Text.Split('.').Last() != "csv") return;
+
+            // イベント駆動は実行時の順序保証がないので、
+            // 明示的にデータの読み込みの終了を管理する必要がある。
+            _dataLoadCompleted = false;
+
+            chart1.Series[UpperChartArea].Points.Clear();
+            chart1.Series[LowerChartArea].Points.Clear();
+            foreach (var detector in _detectors)
+            {
+                chart1.Series[UpperChartArea + detector].Points.Clear();
+                chart1.Series[LowerChartArea + detector].Points.Clear();
+            }
+
+            var path = Path.Combine("..", "data", treeView1.SelectedNode.FullPath);
+            using (var sr = new StreamReader(path))
+            {
+                var head = sr.ReadLine().Split(',').ToList();
+                var dateColumnIndex = head.IndexOf("timestamp");
+                var valueColumnIndex = head.IndexOf("value");
+                while (!sr.EndOfStream)
+                {
+                    var line = sr.ReadLine().Split(',');
+                    var date = DateTime.ParseExact(line[dateColumnIndex], "yyyy-MM-dd HH:mm:ss", null);
+                    var value = double.Parse(line[valueColumnIndex]);
+                    chart1.Series[UpperChartArea].Points.AddXY(date, value);
+                    chart1.Series[LowerChartArea].Points.AddXY(date, value);
+                }
+            }
+
+
+            //foreach (var detector in AnomalyResults.Dictionary)
+            //{
+            //    foreach (var score in detector.Value[detector.Key + "_" + _fileName.SplitPath.DirectorySeparatorChar).Last()])
+            //    {
+            //        if (score.Item2 > 0.9999)
+            //        {
+            //            chart1.Invoke((Action)(() => chart1.Series[UpperChartArea + detector.Key].Points.AddXY(score.Item1, score.Item2)));
+            //            chart1.Invoke((Action)(() => chart1.Series[LowerChartArea + detector.Key].Points.AddXY(score.Item1, score.Item2)));
+            //        }
+            //    }
+            //}
+
+            _dataReader = new DataReader(chart1.Series[UpperChartArea]);
+            _dataLoadCompleted = true;
+
+            // Chart の仕様上、一度描画されないと ValueToPixelPosition が使えないらしい。
+            // RecalculateAxesScale でなんとかならなかった。
+            // chart1.ChartAreas[UpperChartArea].RecalculateAxesScale();
+            chart1.Refresh();
+
+            // 下の ChartArea[1] の Y 軸方向のスケールを、上の ChartArea[0] に合わせる。
+            var axisY = chart1.ChartAreas[UpperChartArea].AxisY;
+            chart1.ChartAreas[LowerChartArea].AxisY.Minimum = axisY.Minimum;
+            chart1.ChartAreas[LowerChartArea].AxisY.Maximum = axisY.Maximum;
+
+            // 選択範囲を現在の ChartArea[0] に合わせる。
+            InitializeSelection();
+            AdjustSelection();
         }
 
         private void Form1_SizeChanged(object sender, EventArgs e)
@@ -331,71 +398,6 @@ namespace NabViz
         private void radioButton5_CheckedChanged(object sender, EventArgs e)
         {
             timer2.Interval = _defaultInterval / 16;
-        }
-
-        private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
-        {
-            // 実行を止める。
-            checkBox2.Checked = false;
-
-            // csv ファイルが選択されたときのみ以降を実行する。
-            if (treeView1.SelectedNode.FullPath.Split('.').Last() != "csv") return;
-
-            // イベント駆動は実行時の順序保証がないので、
-            // 明示的にデータの読み込みの終了を管理する必要がある。
-            _dataLoadCompleted = false;
-
-            chart1.Series[UpperChartArea].Points.Clear();
-            chart1.Series[LowerChartArea].Points.Clear();
-            foreach (var detector in _detectors)
-            {
-                chart1.Series[UpperChartArea + detector].Points.Clear();
-                chart1.Series[LowerChartArea + detector].Points.Clear();
-            }
-
-            var path = Path.Combine("..", "data", treeView1.SelectedNode.FullPath);
-            using (var sr = new StreamReader(path))
-            {
-                var head = sr.ReadLine().Split(',');
-                while (!sr.EndOfStream)
-                {
-                    var line = sr.ReadLine().Split(',');
-                    var date = DateTime.ParseExact(line[0], "yyyy-MM-dd HH:mm:ss", null);
-                    var value = double.Parse(line[1]);
-                    chart1.Series[UpperChartArea].Points.AddXY(date, value);
-                    chart1.Series[LowerChartArea].Points.AddXY(date, value);
-                }
-            }
-
-
-            //foreach (var detector in AnomalyResults.Dictionary)
-            //{
-            //    foreach (var score in detector.Value[detector.Key + "_" + _fileName.SplitPath.DirectorySeparatorChar).Last()])
-            //    {
-            //        if (score.Item2 > 0.9999)
-            //        {
-            //            chart1.Invoke((Action)(() => chart1.Series[UpperChartArea + detector.Key].Points.AddXY(score.Item1, score.Item2)));
-            //            chart1.Invoke((Action)(() => chart1.Series[LowerChartArea + detector.Key].Points.AddXY(score.Item1, score.Item2)));
-            //        }
-            //    }
-            //}
-
-            _dataReader = new DataReader(chart1.Series[UpperChartArea]);
-            _dataLoadCompleted = true;
-
-            // Chart の仕様上、一度描画されないと ValueToPixelPosition が使えないらしい。
-            // RecalculateAxesScale でなんとかならなかった。
-            // chart1.ChartAreas[UpperChartArea].RecalculateAxesScale();
-            chart1.Refresh();
-
-            // 下の ChartArea[1] の Y 軸方向のスケールを、上の ChartArea[0] に合わせる。
-            var axisY = chart1.ChartAreas[UpperChartArea].AxisY;
-            chart1.ChartAreas[LowerChartArea].AxisY.Minimum = axisY.Minimum;
-            chart1.ChartAreas[LowerChartArea].AxisY.Maximum = axisY.Maximum;
-
-            // 選択範囲を現在の ChartArea[0] に合わせる。
-            InitializeSelection();
-            AdjustSelection();
         }
     }
 }
