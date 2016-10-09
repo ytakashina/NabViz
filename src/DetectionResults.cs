@@ -17,14 +17,7 @@ namespace NabViz
             foreach (var detectorDir in dir.GetDirectories())
             {
                 var detectorName = detectorDir.ToString();
-                try
-                {
-                    _resultsByDetector.Add(detectorName, new Dictionary<string, Dictionary<DateTime, double>>());
-                }
-                catch (ArgumentException e)
-                {
-                    Console.WriteLine(e.Message);
-                }
+                _resultsByDetector.Add(detectorName, new Dictionary<string, Dictionary<DateTime, double>>());
             }
             _instance = this;
         }
