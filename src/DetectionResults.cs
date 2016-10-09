@@ -7,20 +7,21 @@ namespace NabViz
 {
     class DetectionResults
     {
-        private readonly Dictionary<string, Dictionary<string, Dictionary<DateTime, double>>> _resultsByDetector;
+        private readonly Dictionary<string, Dictionary<string, Dictionary<DateTime, double>>> _results;
 
         private DetectionResults()
         {
-            _resultsByDetector = Detectors.List.ToDictionary(s => s, s => new Dictionary<string, Dictionary<DateTime, double>>());
+            _results = Detectors.List.ToDictionary(s => s, s => new Dictionary<string, Dictionary<DateTime, double>>());
             _instance = this;
         }
 
         public static void Load(string dataPath)
         {
-            if (_instance._resultsByDetector.First().Value.ContainsKey(dataPath)) return;
-            foreach (var detectorName in _instance._resultsByDetector.Keys)
+            if (_instance == null) _instance = new DetectionResults();
+            if (_instance._results.First().Value.ContainsKey(dataPath)) return;
+            foreach (var detectorName in _instance._results.Keys)
             {
-                _instance._resultsByDetector[detectorName].Add(dataPath, new Dictionary<DateTime, double>());
+                _instance._results[detectorName].Add(dataPath, new Dictionary<DateTime, double>());
                 var path = Path.Combine("..", "results", detectorName, dataPath.Insert(dataPath.LastIndexOf(Path.DirectorySeparatorChar) + 1, detectorName + "_"));
                 using (var sr = new StreamReader(path))
                 {
@@ -32,15 +33,14 @@ namespace NabViz
                         var line = sr.ReadLine().Split(',');
                         var date = DateTime.ParseExact(line[dateColumnIndex], "yyyy-MM-dd HH:mm:ss", null);
                         var value = double.Parse(line[scoreColumnIndex]);
-                        _instance._resultsByDetector[detectorName][dataPath][date] = value;
-                        //_instance._resultsByDetector[detectorName][dataPath].Add(date, value);
+                        _instance._results[detectorName][dataPath][date] = value;
+                        //_instance._results[detectorName][dataPath].Add(date, value);
                     }
                 }
             }
         }
 
         private static DetectionResults _instance;
-        public static DetectionResults Instance => _instance ?? (_instance = new DetectionResults());
-        public static Dictionary<string, Dictionary<string, Dictionary<DateTime, double>>> ResultsByDetector => Instance._resultsByDetector;
+        public static Dictionary<string, Dictionary<string, Dictionary<DateTime, double>>> Dictionary => _instance._results;
     }
 }
