@@ -14,7 +14,7 @@ namespace NabViz
         private const string UpperChartArea = "Global";
         private const string LowerChartArea = "Local";
         private Graphics _graphics;
-        private readonly Brush _windowBrush;
+        private Brush _windowBrush;
         private RectangleF _selection;
         private bool _dataLoadCompleted;
         private DataReader _dataReader;
@@ -24,15 +24,18 @@ namespace NabViz
         {
             InitializeComponent();
 
-            var bmp = new Bitmap(pictureBox1.Width, pictureBox1.Height, PixelFormat.Format32bppArgb);
-            bmp.MakeTransparent(Color.White);
-            _graphics = Graphics.FromImage(bmp);
-            _windowBrush = new SolidBrush(Color.FromArgb(64, Color.Red));
-            pictureBox1.BackgroundImage = bmp;
-            pictureBox1.Parent = chart1;
+            InitializeChart();
+            InitializeTreeView();
+            InitializePictureBox();
+            InitializeTableLayoutPanel();
+
+            _dataReader = new DataReader(chart1.Series[UpperChartArea]);
 
             timer1.Start();
+        }
 
+        private void InitializeChart()
+        {
             chart1.ChartAreas.Add(new ChartArea(UpperChartArea));
             chart1.ChartAreas.Add(new ChartArea(LowerChartArea));
             chart1.ChartAreas[UpperChartArea].AxisX.LabelStyle.Format = "M/d\nhh:mm";
@@ -60,22 +63,8 @@ namespace NabViz
                 Color = Color.CornflowerBlue
             });
 
-            treeView1.PathSeparator = Path.DirectorySeparatorChar.ToString();
-
-            var rootDir = new DirectoryInfo(Path.Combine("..", "data"));
-            foreach (var dir in rootDir.GetDirectories())
-            {
-                var node = new TreeNode(dir.ToString());
-                var files = dir.GetFiles("*.csv");
-                foreach (var f in files) node.Nodes.Add(f.ToString());
-                treeView1.Nodes.Add(node);
-            }
             foreach (var detectorName in Detectors.List)
             {
-                tableLayoutPanel1.Controls.Add(new Label {Text = detectorName});
-                tableLayoutPanel1.Controls.Add(CreateDetectorComboBox(detectorName));
-                tableLayoutPanel1.Controls.Add(CreateThresholdTextBox(detectorName));
-
                 chart1.Series.Add(new Series
                 {
                     Name = UpperChartArea + detectorName,
@@ -102,8 +91,40 @@ namespace NabViz
                     Enabled = false
                 });
             }
+        }
 
-            _selection.Width = 100;
+        private void InitializeTreeView()
+        {
+            treeView1.PathSeparator = Path.DirectorySeparatorChar.ToString();
+
+            var rootDir = new DirectoryInfo(Path.Combine("..", "data"));
+            foreach (var dir in rootDir.GetDirectories())
+            {
+                var node = new TreeNode(dir.ToString());
+                var files = dir.GetFiles("*.csv");
+                foreach (var f in files) node.Nodes.Add(f.ToString());
+                treeView1.Nodes.Add(node);
+            }
+        }
+
+        private void InitializePictureBox()
+        {
+            var bmp = new Bitmap(pictureBox1.Width, pictureBox1.Height, PixelFormat.Format32bppArgb);
+            bmp.MakeTransparent(Color.White);
+            _graphics = Graphics.FromImage(bmp);
+            _windowBrush = new SolidBrush(Color.FromArgb(64, Color.Red));
+            pictureBox1.BackgroundImage = bmp;
+            pictureBox1.Parent = chart1;
+        }
+
+        private void InitializeTableLayoutPanel()
+        {
+            foreach (var detectorName in Detectors.List)
+            {
+                tableLayoutPanel1.Controls.Add(new Label { Text = detectorName });
+                tableLayoutPanel1.Controls.Add(CreateDetectorComboBox(detectorName));
+                tableLayoutPanel1.Controls.Add(CreateThresholdTextBox(detectorName));
+            }
         }
 
         private void InitializeInnerPlotPosition(string name)
@@ -119,6 +140,7 @@ namespace NabViz
         {
             var axisX = chart1.ChartAreas[UpperChartArea].AxisX;
             _selection.X = (float) axisX.ValueToPixelPosition(axisX.Minimum);
+            _selection.Width = 100;
         }
 
         /// <summary>
@@ -143,6 +165,13 @@ namespace NabViz
             if (_selection.X < minX) _selection.X = (float) minX;
         }
 
+        private void AdjustYAxisScale()
+        {
+            var axisY = chart1.ChartAreas[UpperChartArea].AxisY;
+            chart1.ChartAreas[LowerChartArea].AxisY.Minimum = axisY.Minimum;
+            chart1.ChartAreas[LowerChartArea].AxisY.Maximum = axisY.Maximum;
+        }
+
         private void DrawSelectedRange()
         {
             _graphics.DrawRectangles(Pens.Red, new[] {_selection});
@@ -163,22 +192,10 @@ namespace NabViz
             }
         }
 
-        private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
+        private void LoadRawDataToChart()
         {
-            // csv ファイルが選択されたときのみ以降を実行する。
-            if (treeView1.SelectedNode.Text.Split('.').Last() != "csv") return;
-
-            // イベント駆動は実行時の順序保証がないので、
-            // 明示的にデータの読み込みの終了を管理する必要がある。
-            _dataLoadCompleted = false;
-
             chart1.Series[UpperChartArea].Points.Clear();
             chart1.Series[LowerChartArea].Points.Clear();
-            foreach (var detectorName in Detectors.List)
-            {
-                chart1.Series[UpperChartArea + detectorName].Points.Clear();
-                chart1.Series[LowerChartArea + detectorName].Points.Clear();
-            }
 
             var path = Path.Combine("..", "data", treeView1.SelectedNode.FullPath);
             using (var sr = new StreamReader(path))
@@ -195,13 +212,21 @@ namespace NabViz
                     chart1.Series[LowerChartArea].Points.AddXY(date, value);
                 }
             }
-//            var x = DetectionResults.By;
-            DetectionResults.Load(treeView1.SelectedNode.FullPath);
+        }
 
-            _dataReader = new DataReader(chart1.Series[UpperChartArea]);
+        private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            // csv ファイルが選択されたときのみ以降を実行する。
+            if (treeView1.SelectedNode.Text.Split('.').Last() != "csv") return;
+
+            // イベント駆動は実行時の順序保証がないので、
+            // 明示的にデータの読み込みの終了を管理する必要がある。
+            _dataLoadCompleted = false;
+            LoadRawDataToChart();
+            DetectionResults.Load(treeView1.SelectedNode.FullPath);
             _dataLoadCompleted = true;
 
-            UpdateChart();
+            UpdateAnomalyPoints();
 
             // Chart の仕様上、一度描画されないと ValueToPixelPosition が使えないらしい。
             // RecalculateAxesScale でなんとかならなかった。
@@ -209,16 +234,14 @@ namespace NabViz
             chart1.Refresh();
 
             // 下の ChartArea[1] の Y 軸方向のスケールを、上の ChartArea[0] に合わせる。
-            var axisY = chart1.ChartAreas[UpperChartArea].AxisY;
-            chart1.ChartAreas[LowerChartArea].AxisY.Minimum = axisY.Minimum;
-            chart1.ChartAreas[LowerChartArea].AxisY.Maximum = axisY.Maximum;
+            AdjustYAxisScale();
 
             // 選択範囲を現在の ChartArea[0] に合わせる。
             InitializeSelection();
             AdjustSelection();
         }
 
-        private void UpdateChart()
+        private void UpdateAnomalyPoints()
         {
             var anomalyPoints = Detectors.List.ToDictionary(s => s, s => new List<DataPoint>());
 
@@ -301,7 +324,7 @@ namespace NabViz
         {
             if (!_dataLoadCompleted) return;
 
-            // 上の Chart の選択範囲に応じて下の Chart のデータを更新。
+            // 上の Chart の選択範囲に応じて下の Chart の AxisX を更新。
             var axisX = chart1.ChartAreas[UpperChartArea].AxisX;
             var minX = axisX.PixelPositionToValue(_selection.X);
             var maxX = axisX.PixelPositionToValue(_selection.Right);
@@ -360,7 +383,7 @@ namespace NabViz
             double tmp;
             if (!double.TryParse(box.Text, out tmp)) return;
             DetectionThresholds.Dictionary[detectorName] = tmp;
-            UpdateChart();
+            UpdateAnomalyPoints();
         }
     }
 }

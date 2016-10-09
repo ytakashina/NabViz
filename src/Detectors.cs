@@ -17,7 +17,7 @@ namespace NabViz
             }
         }
 
-        private static readonly Detectors Instance = new Detectors();
-        public static List<string> List => Instance._detectors;
+        private static readonly Detectors _instance = new Detectors();
+        public static List<string> List => _instance._detectors;
     }
 }
