@@ -35,7 +35,7 @@ namespace NabViz
             _instance = this;
         }
 
-        private static DetectionThresholds _instance;
-        public static Dictionary<string, double> Dictionary => (_instance ?? (_instance = new DetectionThresholds()))._thresholds;
+        private static DetectionThresholds _instance = new DetectionThresholds();
+        public static Dictionary<string, double> Dictionary => _instance._thresholds;
     }
 }

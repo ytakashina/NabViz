@@ -33,9 +33,7 @@ namespace NabViz
             _instance = this;
         }
 
-        public List<Tuple<DateTime, DateTime>> this[string key] => _labels[key];
-
         private static AnomalyLabels _instance = new AnomalyLabels();
-        public static AnomalyLabels Instance => _instance;
+        public static Dictionary<string, List<Tuple<DateTime, DateTime>>> Dictionary => _instance._labels;
     }
 }
