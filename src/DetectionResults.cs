@@ -17,7 +17,6 @@ namespace NabViz
 
         public static void Load(string dataPath)
         {
-            if (_instance == null) _instance = new DetectionResults();
             if (_instance._results.First().Value.ContainsKey(dataPath)) return;
             foreach (var detectorName in _instance._results.Keys)
             {
@@ -40,7 +39,7 @@ namespace NabViz
             }
         }
 
-        private static DetectionResults _instance;
+        private static DetectionResults _instance = new DetectionResults();
         public static Dictionary<string, Dictionary<string, Dictionary<DateTime, double>>> Dictionary => _instance._results;
     }
 }

@@ -184,7 +184,7 @@ namespace NabViz
             var axisY = chart1.ChartAreas[name].AxisY;
             var minY = (int) axisY.ValueToPixelPosition(axisY.Minimum);
             var maxY = (int) axisY.ValueToPixelPosition(axisY.Maximum);
-            foreach (var window in AnomalyLabels.Instance[treeView1.SelectedNode.FullPath])
+            foreach (var window in AnomalyLabels.Dictionary[treeView1.SelectedNode.FullPath])
             {
                 var minX = (int) axisX.ValueToPixelPosition(window.Item1.ToOADate());
                 var maxX = (int) axisX.ValueToPixelPosition(window.Item2.ToOADate());
