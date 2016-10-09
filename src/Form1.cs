@@ -76,7 +76,7 @@ namespace NabViz
             {
                 var detectorNames = DetectionResults.ResultsByDetector.Keys;
                 tableLayoutPanel1.Controls.Add(new CheckBox());
-                tableLayoutPanel1.Controls.Add(new Label { Text =  detectorNames.ElementAt(i)});
+                tableLayoutPanel1.Controls.Add(new Label { Text = detectorNames.ElementAt(i), Anchor = AnchorStyles.Bottom });
                 tableLayoutPanel1.Controls.Add(ComboBoxFactory.Create());
 
                 chart1.Series.Add(new Series
