@@ -1,20 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using Newtonsoft.Json;
 
 namespace NabViz
 {
     class AnomalyLabels
     {
+        private static AnomalyLabels _instance = new AnomalyLabels();
         private readonly Dictionary<string, List<Tuple<DateTime, DateTime>>> _labels;
 
         private AnomalyLabels()
         {
             _labels = new Dictionary<string, List<Tuple<DateTime, DateTime>>>();
             var path = Path.Combine("..", "labels", "combined_windows.json");
-            var sr = new StreamReader(path, Encoding.GetEncoding("utf-8"));
+            var sr = new StreamReader(path);
             var json = sr.ReadToEnd();
             sr.Close();
             var dict = JsonConvert.DeserializeObject<Dictionary<string, List<List<string>>>>(json);
@@ -32,7 +32,6 @@ namespace NabViz
             }
         }
 
-        private static readonly AnomalyLabels _instance = new AnomalyLabels();
         public static Dictionary<string, List<Tuple<DateTime, DateTime>>> Dictionary => _instance._labels;
     }
 }
