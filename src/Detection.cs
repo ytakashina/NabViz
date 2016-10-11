@@ -54,6 +54,8 @@ namespace NabViz
                     var head = sr.ReadLine().Split(',').ToList();
                     var dateColumnIndex = head.IndexOf("timestamp");
                     var scoreColumnIndex = head.IndexOf("anomaly_score");
+                    if (dateColumnIndex == -1) throw new FormatException("\"timestamp\" column does not exist.");
+                    if (scoreColumnIndex == -1) throw new FormatException("\"anomaly_score\" column does not exist.");
                     while (!sr.EndOfStream)
                     {
                         var line = sr.ReadLine().Split(',');

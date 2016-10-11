@@ -77,6 +77,8 @@ namespace NabViz
                 var head = sr.ReadLine().Split(',').ToList();
                 var dateColumnIndex = head.IndexOf("timestamp");
                 var valueColumnIndex = head.IndexOf("value");
+                if (dateColumnIndex == -1) throw new FormatException("\"timestamp\" column does not exist.");
+                if (valueColumnIndex == -1) throw new FormatException("\"value\" column does not exist.");
                 while (!sr.EndOfStream)
                 {
                     var line = sr.ReadLine().Split(',');
@@ -90,10 +92,11 @@ namespace NabViz
 
         private void LoadDetectionDataToChart()
         {
+            Detection.LoadResults(treeView1.SelectedNode.FullPath);
+
             var anomalyPoints = Detection.Detectors.ToDictionary(s => s, s => new List<DataPoint>());
 
             _dataReader.Rewind();
-            Detection.LoadResults(treeView1.SelectedNode.FullPath);
             while (!_dataReader.EndOfStream)
             {
                 var point = _dataReader.Next;

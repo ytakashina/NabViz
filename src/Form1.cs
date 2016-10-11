@@ -50,8 +50,15 @@ namespace NabViz
         {
             if (treeView1.SelectedNode.Text.Split('.').Last() != "csv") return;
 
-            LoadRawDataToChart();
-            LoadDetectionDataToChart();
+            try
+            {
+                LoadRawDataToChart();
+                LoadDetectionDataToChart();
+            }
+            catch (FormatException ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
 
             InitializeSelection();
             AdjustSelection();
