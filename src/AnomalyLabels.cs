@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 using Newtonsoft.Json;
 
 namespace NabViz
@@ -19,6 +21,11 @@ namespace NabViz
         private void Initialize()
         {
             var path = Path.Combine("..", "labels", "combined_windows.json");
+            if (!File.Exists(path))
+            {
+                Task.Run(() => { MessageBox.Show("Labels file does not exists!"); });
+                return;
+            }
             var sr = new StreamReader(path);
             var json = sr.ReadToEnd();
             sr.Close();

@@ -1,4 +1,6 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
 
@@ -53,11 +55,12 @@ namespace NabViz
         private void DrawAnomaryWindow(string name)
         {
             if (treeView1.SelectedNode.Text.Split('.').Last() != "csv") return;
+            if (!AnomalyLabels.Dictionary.ContainsKey(treeView1.SelectedNode.FullPath)) return;
 
             var axisX = chart1.ChartAreas[name].AxisX;
             var axisY = chart1.ChartAreas[name].AxisY;
-            var minY = (int) axisY.ValueToPixelPosition(axisY.Minimum);
-            var maxY = (int) axisY.ValueToPixelPosition(axisY.Maximum);
+            var minY = (int)axisY.ValueToPixelPosition(axisY.Minimum);
+            var maxY = (int)axisY.ValueToPixelPosition(axisY.Maximum);
             foreach (var window in AnomalyLabels.Dictionary[treeView1.SelectedNode.FullPath])
             {
                 var minX = (int) axisX.ValueToPixelPosition(window.Item1.ToOADate());
