@@ -11,8 +11,7 @@ namespace NabViz
 
         private DetectionResults()
         {
-            _results = Detectors.List.ToDictionary(s => s, s => new Dictionary<string, Dictionary<DateTime, double>>());
-            _instance = this;
+            _results = Detection.Detectors.ToDictionary(s => s, s => new Dictionary<string, Dictionary<DateTime, double>>());
         }
 
         public static void Load(string dataPath)
@@ -40,6 +39,6 @@ namespace NabViz
         }
 
         private static DetectionResults _instance = new DetectionResults();
-        public static Dictionary<string, Dictionary<string, Dictionary<DateTime, double>>> Dictionary => _instance._results;
+        public static Dictionary<string, Dictionary<string, Dictionary<DateTime, double>>> Results => _instance._results;
     }
 }

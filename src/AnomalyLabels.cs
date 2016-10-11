@@ -30,10 +30,9 @@ namespace NabViz
                 }
                 _labels.Add(Path.Combine(file.Key.Split('/')), list);
             }
-            _instance = this;
         }
 
-        private static AnomalyLabels _instance = new AnomalyLabels();
+        private static readonly AnomalyLabels _instance = new AnomalyLabels();
         public static Dictionary<string, List<Tuple<DateTime, DateTime>>> Dictionary => _instance._labels;
     }
 }

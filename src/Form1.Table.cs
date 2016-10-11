@@ -15,7 +15,7 @@ namespace NabViz
             tableLayoutPanel1.Controls.Add(new Label { Text = "Detector" });
             tableLayoutPanel1.Controls.Add(new Label { Text = "Marker", Width = 70 });
             tableLayoutPanel1.Controls.Add(new Label { Text = "Threshold", Width = 60 });
-            foreach (var detectorName in Detectors.List)
+            foreach (var detectorName in Detection.Detectors)
             {
                 tableLayoutPanel1.Controls.Add(new Label { Text = detectorName });
                 tableLayoutPanel1.Controls.Add(CreateDetectorComboBox(detectorName));
@@ -39,7 +39,7 @@ namespace NabViz
             var box = new TextBox();
             box.Width = 60;
             box.Name = detectorName;
-            box.Text = DetectionThresholds.Dictionary[detectorName].ToString();
+            box.Text = Detection.Thresholds[detectorName].ToString();
             box.TextChanged += thresholdBox_TextChanged;
             return box;
         }
@@ -67,7 +67,7 @@ namespace NabViz
             var detectorName = box.Name;
             double tmp;
             if (!double.TryParse(box.Text, out tmp)) return;
-            DetectionThresholds.Dictionary[detectorName] = tmp;
+            Detection.Thresholds[detectorName] = tmp;
             LoadDetectionDataToChart();
         }
     }

@@ -22,7 +22,7 @@ namespace NabViz
             // though it's impossible as far as I tried.
             AddSeriesToChart(UpperChartArea);
             AddSeriesToChart(LowerChartArea);
-            foreach (var detectorName in Detectors.List)
+            foreach (var detectorName in Detection.Detectors)
             {
                 AddDetectionSeriesToChart(UpperChartArea, detectorName);
                 AddDetectionSeriesToChart(LowerChartArea, detectorName);
@@ -90,21 +90,21 @@ namespace NabViz
 
         private void LoadDetectionDataToChart()
         {
-            var anomalyPoints = Detectors.List.ToDictionary(s => s, s => new List<DataPoint>());
+            var anomalyPoints = Detection.Detectors.ToDictionary(s => s, s => new List<DataPoint>());
 
             _dataReader.Rewind();
-            DetectionResults.Load(treeView1.SelectedNode.FullPath);
+            Detection.LoadResults(treeView1.SelectedNode.FullPath);
             while (!_dataReader.EndOfStream)
             {
                 var point = _dataReader.Next;
-                foreach (var detector in Detectors.List)
+                foreach (var detector in Detection.Detectors)
                 {
-                    var score = DetectionResults.Dictionary[detector][treeView1.SelectedNode.FullPath][DateTime.FromOADate(point.XValue)];
-                    if (score >= DetectionThresholds.Dictionary[detector]) anomalyPoints[detector].Add(point);
+                    var score = Detection.Results[detector][treeView1.SelectedNode.FullPath][DateTime.FromOADate(point.XValue)];
+                    if (score >= Detection.Thresholds[detector]) anomalyPoints[detector].Add(point);
                 }
             }
 
-            foreach (var detectorName in Detectors.List)
+            foreach (var detectorName in Detection.Detectors)
             {
                 chart1.Invoke((Action)(() =>
                 {

@@ -21,7 +21,7 @@ namespace NabViz
             };
 
             _thresholds = new Dictionary<string, double>();
-            foreach (var detector in Detectors.List)
+            foreach (var detector in Detection.Detectors)
             {
                 var path = Path.Combine("..", "results", detector, detector + "_standard_scores.csv");
                 using (var sr = new StreamReader(path))
