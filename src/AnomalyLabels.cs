@@ -7,12 +7,17 @@ namespace NabViz
 {
     class AnomalyLabels
     {
-        private static AnomalyLabels _instance = new AnomalyLabels();
+        private static readonly AnomalyLabels _instance = new AnomalyLabels();
         private readonly Dictionary<string, List<Tuple<DateTime, DateTime>>> _labels;
 
         private AnomalyLabels()
         {
             _labels = new Dictionary<string, List<Tuple<DateTime, DateTime>>>();
+            Initialize();
+        }
+
+        private void Initialize()
+        {
             var path = Path.Combine("..", "labels", "combined_windows.json");
             var sr = new StreamReader(path);
             var json = sr.ReadToEnd();
