@@ -52,11 +52,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="src\Form1.Graphics.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="src\Form1.Table.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="src\AnomalyLabels.cs" />
-    <Compile Include="src\DetectionResults.cs" />
     <Compile Include="src\DataReader.cs" />
-    <Compile Include="src\DetectionThresholds.cs" />
-    <Compile Include="src\Detectors.cs" />
+    <Compile Include="src\Detection.cs" />
     <Compile Include="src\Form1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -87,6 +91,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <Compile Include="src\Form1.Chart.cs">
+      <SubType>Form</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
