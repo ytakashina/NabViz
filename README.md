@@ -9,6 +9,8 @@ You can choose which detector to draw and change each theshold with GUI, zoom in
 - .NET 4.5
 - Json.NET
 
+## Build
+Just open the solution file in your Visual Studio, then build.
 
 ## How to use
 This application assumes the following directory structure.
