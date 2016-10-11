@@ -3,6 +3,8 @@ A visualization tool for Numenta Anomaly Benchmark (NAB).
 
 ![Screen shot](./image.png)
 
+You can choose which detector to draw and change each theshold with GUI, zoom in a partcular area using mouse wheel.
+
 ## Requirements
 - .NET 4.5
 - Json.NET
