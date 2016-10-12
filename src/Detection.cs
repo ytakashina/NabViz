@@ -59,6 +59,8 @@ namespace NabViz
         public static void LoadResults(string dataPath)
         {
             if (!_instance._results.Keys.Any()) throw new Exception("detector not found");
+            // return if results had been already loaded
+            if (_instance._results.First().Value.ContainsKey(dataPath)) return;
 
             foreach (var detectorName in _instance._results.Keys)
             {
