@@ -11,8 +11,7 @@ Also you can zoom in a partcular area using mouse wheel.
 - Json.NET
 
 ## Downloads
-- Windows binary<br>
-https://y-takashina.github.io/
+- Windows binary is <a href="https://y-takashina.github.io/dist/NabViz.zip">here</a>.
 
 ## Build
 Just open the solution file in your Visual Studio, then build.
