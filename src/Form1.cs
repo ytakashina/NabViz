@@ -21,10 +21,17 @@ namespace NabViz
         {
             InitializeComponent();
 
-            InitializeChart();
-            InitializeTreeView();
-            InitializePictureBox();
-            InitializeTableLayoutPanel();
+            try
+            {
+                InitializeChart();
+                InitializeTreeView();
+                InitializePictureBox();
+                InitializeTableLayoutPanel();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 
             _dataReader = new DataReader(chart1.Series[UpperChartArea]);
 
@@ -35,8 +42,9 @@ namespace NabViz
         {
             treeView1.PathSeparator = Path.DirectorySeparatorChar.ToString();
 
-            var rootDir = new DirectoryInfo(Path.Combine("..", "data"));
-            foreach (var dir in rootDir.GetDirectories())
+            var path = Path.Combine("..", "data");
+            if (!Directory.Exists(path)) throw new FileNotFoundException(path + " does not exist.");
+            foreach (var dir in new DirectoryInfo(path).GetDirectories())
             {
                 var node = new TreeNode(dir.ToString());
                 var files = dir.GetFiles("*.csv");
@@ -56,7 +64,7 @@ namespace NabViz
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
             InitializeSelection();
@@ -72,6 +80,7 @@ namespace NabViz
 
         private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
         {
+            if (treeView1.SelectedNode == null) return;
             if (treeView1.SelectedNode.Text.Split('.').Last() != "csv") return;
             if (_selectionFixed) return;
 
@@ -110,6 +119,7 @@ namespace NabViz
 
         private void timer1_Tick(object sender, EventArgs e)
         {
+            if (treeView1.SelectedNode == null) return;
             if (treeView1.SelectedNode.Text.Split('.').Last() != "csv") return;
 
             // Update the lower chart's AxisX range corresponding to the upper chart's selection.

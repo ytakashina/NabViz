@@ -72,7 +72,7 @@ namespace NabViz
             chart1.Series[LowerChartArea].Points.Clear();
 
             var path = Path.Combine("..", "data", treeView1.SelectedNode.FullPath);
-            if (!File.Exists(path)) throw new FileNotFoundException(path + " does not exist.");
+            if (!File.Exists(path)) throw new FileNotFoundException("\"" + path + "\"" + " does not exist.");
             using (var sr = new StreamReader(path))
             {
                 var head = sr.ReadLine().Split(',').ToList();
