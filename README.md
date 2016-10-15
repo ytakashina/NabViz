@@ -11,7 +11,7 @@ Also you can zoom in a partcular area using mouse wheel.
 - Json.NET
 
 ## Downloads
-The Windows binary is in the following page.
+- Windows binary<br>
 https://y-takashina.github.io/
 
 ## Build
