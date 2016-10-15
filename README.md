@@ -10,6 +10,10 @@ Also you can zoom in a partcular area using mouse wheel.
 - .NET 4.5
 - Json.NET
 
+## Downloads
+The Windows binary is in the following page.
+https://y-takashina.github.io/
+
 ## Build
 Just open the solution file in your Visual Studio, then build.
 
