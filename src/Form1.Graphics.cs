@@ -30,6 +30,7 @@ namespace NabViz
         /// </summary>
         private void AdjustSelection()
         {
+            if (treeView1.Nodes.Count == 0) return;
             if (treeView1.SelectedNode.Text.Split('.').Last() != "csv") return;
 
             var axisY = chart1.ChartAreas[UpperChartArea].AxisY;

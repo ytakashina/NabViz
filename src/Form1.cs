@@ -135,5 +135,19 @@ namespace NabViz
             DrawAnomaryWindow(LowerChartArea);
             pictureBox1.Refresh();
         }
+
+        private void pictureBox1_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Control && e.KeyCode == Keys.S)
+            {
+                chart1.Width *= 2;
+                chart1.Height *= 2;
+                chart1.Dock = DockStyle.None;
+                chart1.SaveImage(DateTime.Now.ToString("yyMMdd_hhmmss") + ".png", ChartImageFormat.Png);
+                chart1.Width /= 2;
+                chart1.Height /= 2;
+                chart1.Dock = DockStyle.Fill;
+            }
+        }
     }
 }
