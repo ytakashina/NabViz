@@ -1,4 +1,6 @@
-﻿namespace NabViz
+﻿using System.Windows.Forms;
+
+namespace NabViz
 {
     partial class Form1
     {
@@ -120,6 +122,7 @@
             this.pictureBox1.MouseEnter += new System.EventHandler(this.pictureBox1_MouseEnter);
             this.pictureBox1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseMove);
             this.pictureBox1.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseWheel);
+            this.pictureBox1.KeyDown += new System.Windows.Forms.KeyEventHandler(pictureBox1_KeyDown);
             // 
             // chart1
             // 
