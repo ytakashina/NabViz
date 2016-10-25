@@ -23,7 +23,7 @@ namespace NabViz
             var path = Path.Combine("..", "labels", "combined_windows.json");
             if (!File.Exists(path))
             {
-                Task.Run(() => { MessageBox.Show("Labels file does not exists!"); });
+                Task.Run(() => { MessageBox.Show("Labels file does not exist."); });
                 return;
             }
             var sr = new StreamReader(path);
