@@ -20,13 +20,17 @@ namespace NabViz
 
             // Ideally only one `Series` instance be created and displayed in both charts
             // though it's impossible as far as I tried.
-            AddSeriesToChart(UpperChartArea);
-            AddSeriesToChart(LowerChartArea);
+            AddSeriesToChart(UpperChartArea, Color.CornflowerBlue);
+            AddSeriesToChart(LowerChartArea, Color.CornflowerBlue);
             foreach (var detectorName in Detection.Detectors)
             {
                 AddDetectionSeriesToChart(UpperChartArea, detectorName);
                 AddDetectionSeriesToChart(LowerChartArea, detectorName);
             }
+
+            AddMarkerSeriesToChart(UpperChartArea, Color.DeepSkyBlue, "group1");
+            AddMarkerSeriesToChart(UpperChartArea, Color.Green, "group2");
+            AddMarkerSeriesToChart(UpperChartArea, Color.OrangeRed, "group3");
         }
 
         private void InitializeInnerPlotPosition(string name)
@@ -38,15 +42,28 @@ namespace NabViz
             inner.Y = 0;
         }
 
-        private void AddSeriesToChart(string name)
+        private void AddSeriesToChart(string chartArea, Color color)
         {
             chart1.Series.Add(new Series
             {
-                Name = name,
-                ChartArea = name,
+                Name = chartArea,
+                ChartArea = chartArea,
                 ChartType = SeriesChartType.Line,
                 XValueType = ChartValueType.DateTime,
-                Color = Color.CornflowerBlue
+                Color = color
+            });
+        }
+
+        private void AddMarkerSeriesToChart(string chartArea, Color color, string name = "")
+        {
+            chart1.Series.Add(new Series
+            {
+                Name = chartArea + name,
+                ChartArea = chartArea,
+                MarkerSize = 10,
+                ChartType = SeriesChartType.Point,
+                XValueType = ChartValueType.DateTime,
+                Color = color
             });
         }
 
@@ -86,6 +103,9 @@ namespace NabViz
                     var date = DateTime.ParseExact(line[dateColumnIndex], "yyyy-MM-dd HH:mm:ss", null);
                     var value = double.Parse(line[valueColumnIndex]);
                     chart1.Series[UpperChartArea].Points.AddXY(date, value);
+                    if (value < 25) chart1.Series[UpperChartArea + "group1"].Points.AddXY(date, value);
+                    else if (value > 50) chart1.Series[UpperChartArea + "group2"].Points.AddXY(date, value);
+                    else chart1.Series[UpperChartArea + "group3"].Points.AddXY(date, value);
                     chart1.Series[LowerChartArea].Points.AddXY(date, value);
                 }
             }
@@ -104,14 +124,15 @@ namespace NabViz
                 var point = _dataReader.Next;
                 foreach (var detector in Detection.Detectors)
                 {
-                    var score = Detection.Results[detector][treeView1.SelectedNode.FullPath][DateTime.FromOADate(point.XValue)];
+                    var score =
+                        Detection.Results[detector][treeView1.SelectedNode.FullPath][DateTime.FromOADate(point.XValue)];
                     if (score >= Detection.Thresholds[detector]) anomalyPoints[detector].Add(point);
                 }
             }
 
             foreach (var detectorName in Detection.Detectors)
             {
-                chart1.Invoke((Action)(() =>
+                chart1.Invoke((Action) (() =>
                 {
                     chart1.Series[UpperChartArea + detectorName].Points.Clear();
                     chart1.Series[LowerChartArea + detectorName].Points.Clear();
