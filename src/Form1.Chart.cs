@@ -60,7 +60,7 @@ namespace NabViz
             {
                 Name = chartArea + name,
                 ChartArea = chartArea,
-                MarkerSize = 10,
+                MarkerStyle = MarkerStyle.Circle,
                 ChartType = SeriesChartType.Point,
                 XValueType = ChartValueType.DateTime,
                 Color = color
