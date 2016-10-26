@@ -143,10 +143,14 @@ namespace NabViz
                 chart1.Width *= 2;
                 chart1.Height *= 2;
                 chart1.Dock = DockStyle.None;
+                foreach (var s in chart1.Series) s.MarkerSize *= 2;
+                foreach (var s in chart1.Series) s.BorderWidth *= 2;
                 chart1.SaveImage(DateTime.Now.ToString("yyMMdd_hhmmss") + ".png", ChartImageFormat.Png);
                 chart1.Width /= 2;
                 chart1.Height /= 2;
                 chart1.Dock = DockStyle.Fill;
+                foreach (var s in chart1.Series) s.MarkerSize /= 2;
+                foreach (var s in chart1.Series) s.BorderWidth /= 2;
             }
         }
     }
