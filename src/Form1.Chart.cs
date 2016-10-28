@@ -31,6 +31,9 @@ namespace NabViz
             AddMarkerSeriesToChart(UpperChartArea, Color.DeepSkyBlue, "group1");
             AddMarkerSeriesToChart(UpperChartArea, Color.Green, "group2");
             AddMarkerSeriesToChart(UpperChartArea, Color.OrangeRed, "group3");
+            AddMarkerSeriesToChart(LowerChartArea, Color.DeepSkyBlue, "group1", MarkerStyle.Circle);
+            AddMarkerSeriesToChart(LowerChartArea, Color.Green, "group2", MarkerStyle.Square);
+            AddMarkerSeriesToChart(LowerChartArea, Color.OrangeRed, "group3", MarkerStyle.Triangle);
         }
 
         private void InitializeInnerPlotPosition(string name)
@@ -54,16 +57,19 @@ namespace NabViz
             });
         }
 
-        private void AddMarkerSeriesToChart(string chartArea, Color color, string name = "")
+        private void AddMarkerSeriesToChart(string chartArea, Color color, string name = "", MarkerStyle marker = MarkerStyle.Circle)
         {
             chart1.Series.Add(new Series
             {
                 Name = chartArea + name,
                 ChartArea = chartArea,
-                MarkerStyle = MarkerStyle.Circle,
+                MarkerStyle = marker,
+                MarkerSize = 6,
+                MarkerBorderWidth = 1,
+                MarkerBorderColor = color,
                 ChartType = SeriesChartType.Point,
                 XValueType = ChartValueType.DateTime,
-                Color = color
+                Color = Color.White
             });
         }
 
@@ -106,6 +112,9 @@ namespace NabViz
                     if (value < 25) chart1.Series[UpperChartArea + "group1"].Points.AddXY(date, value);
                     else if (value > 50) chart1.Series[UpperChartArea + "group2"].Points.AddXY(date, value);
                     else chart1.Series[UpperChartArea + "group3"].Points.AddXY(date, value);
+                    if (value < 25) chart1.Series[LowerChartArea + "group1"].Points.AddXY(date, value);
+                    else if (value > 50) chart1.Series[LowerChartArea + "group2"].Points.AddXY(date, value);
+                    else chart1.Series[LowerChartArea + "group3"].Points.AddXY(date, value);
                     chart1.Series[LowerChartArea].Points.AddXY(date, value);
                 }
             }
