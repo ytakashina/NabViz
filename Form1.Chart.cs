@@ -57,7 +57,8 @@ namespace NabViz
             });
         }
 
-        private void AddMarkerSeriesToChart(string chartArea, Color color, string name = "", MarkerStyle marker = MarkerStyle.Circle)
+        private void AddMarkerSeriesToChart(string chartArea, Color color, string name = "",
+            MarkerStyle marker = MarkerStyle.Circle)
         {
             chart1.Series.Add(new Series
             {
@@ -93,6 +94,10 @@ namespace NabViz
         {
             chart1.Series[UpperChartArea].Points.Clear();
             chart1.Series[LowerChartArea].Points.Clear();
+            chart1.Series[UpperChartArea + "group1"].Points.Clear();
+            chart1.Series[LowerChartArea + "group1"].Points.Clear();
+
+            var means = new[] { 0.20300992437855453, 0.19668648155473095, 0.1903630387309074, 0.18403959590708382, 0.17771615308326028, 0.1713927102594367, 0.16506926743561312, 0.15874582461178957, 0.15242238178796602, 0.14609893896414244, 0.13977549614031887, 0.13345205331649532, 0.12712861049267174, 0.12080516766884818, 0.11448172484502461, 0.10815828202120105, 0.10183483919737749, 0.09551139637355392, 0.08918795354973036, 0.0828645107259068, 0.07654106790208323, 0.07021762507825965, 0.0638941822544361, 0.05757073943061253, 0.05124729660678895, 0.0449238537829654, 0.03860041095914182, 0.032276968135318274, 0.025953525311494696, 0.019630082487671147, 0.01330663966384757, 0.00698319684002402 };
 
             var path = Path.Combine("..", "data", treeView1.SelectedNode.FullPath);
             if (!File.Exists(path)) throw new FileNotFoundException("\"" + path + "\"" + " does not exist.");
@@ -108,13 +113,20 @@ namespace NabViz
                     var line = sr.ReadLine().Split(',');
                     var date = DateTime.ParseExact(line[dateColumnIndex], "yyyy-MM-dd HH:mm:ss", null);
                     var value = double.Parse(line[valueColumnIndex]);
+                    var sampledValue = means[0];
+                    var min = double.MaxValue;
+                    foreach (var m in means)
+                    {
+                        var tmp = Math.Abs(m - value);
+                        if (min > tmp)
+                        {
+                            min = tmp;
+                            sampledValue = m;
+                        } 
+                    }
+                    chart1.Series[UpperChartArea + "group1"].Points.AddXY(date, sampledValue);
+                    chart1.Series[LowerChartArea + "group1"].Points.AddXY(date, sampledValue);
                     chart1.Series[UpperChartArea].Points.AddXY(date, value);
-                    if (value < 25) chart1.Series[UpperChartArea + "group1"].Points.AddXY(date, value);
-                    else if (value > 50) chart1.Series[UpperChartArea + "group2"].Points.AddXY(date, value);
-                    else chart1.Series[UpperChartArea + "group3"].Points.AddXY(date, value);
-                    if (value < 25) chart1.Series[LowerChartArea + "group1"].Points.AddXY(date, value);
-                    else if (value > 50) chart1.Series[LowerChartArea + "group2"].Points.AddXY(date, value);
-                    else chart1.Series[LowerChartArea + "group3"].Points.AddXY(date, value);
                     chart1.Series[LowerChartArea].Points.AddXY(date, value);
                 }
             }
